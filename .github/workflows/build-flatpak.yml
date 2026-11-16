@@ -193,8 +193,9 @@ jobs:
           dbus-run-session -- flatpak install -y --noninteractive fedora \
             "org.fedoraproject.Platform//f${FEDORA}" \
             "org.fedoraproject.Sdk//f${FEDORA}"
-          # Parent app defines extension points required by build-extension manifests
-          dbus-run-session -- flatpak install -y --noninteractive --user ./org.devenv.Neovim.flatpak
+          # Parent app defines extension points; --no-deps avoids oci+ flatpakrepo URL errors
+          # (Platform/Sdk already installed above).
+          dbus-run-session -- flatpak install -y --noninteractive --user --no-deps ./org.devenv.Neovim.flatpak
 
       - name: Build Extension
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6
