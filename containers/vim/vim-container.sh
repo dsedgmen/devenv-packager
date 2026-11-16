@@ -1,26 +1,24 @@
-#!/bin/bash
-# Vim Container Wrapper
-# Makes containerized vim feel like native vim
+#!/usr/bin/env bash
+# Run packager vim image with workspace mounted.
+set -euo pipefail
 
-# Pass through API keys if set
-ENV_ARGS=""
-if [ -n "$ANTHROPIC_API_KEY" ]; then
-    ENV_ARGS="$ENV_ARGS -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY"
+env_args=()
+if [[ -n "${ANTHROPIC_API_KEY:-}" ]]; then
+  env_args+=(-e "ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}")
 fi
-if [ -n "$GEMINI_API_KEY" ]; then
-    ENV_ARGS="$ENV_ARGS -e GEMINI_API_KEY=$GEMINI_API_KEY"
+if [[ -n "${GEMINI_API_KEY:-}" ]]; then
+  env_args+=(-e "GEMINI_API_KEY=${GEMINI_API_KEY}")
 fi
-if [ -n "$DEVENV_AI_BACKEND" ]; then
-    ENV_ARGS="$ENV_ARGS -e DEVENV_AI_BACKEND=$DEVENV_AI_BACKEND"
+if [[ -n "${DEVENV_AI_BACKEND:-}" ]]; then
+  env_args+=(-e "DEVENV_AI_BACKEND=${DEVENV_AI_BACKEND}")
 fi
 
-# Run vim in container
 exec podman run --rm -it \
-    --userns=keep-id \
-    --security-opt label=disable \
-    -v "$(pwd):/workspace:z" \
-    -v "$HOME/.gitconfig:/home/$(whoami)/.gitconfig:ro" \
-    --network=host \
-    $ENV_ARGS \
-    "${DEVENV_VIM_IMAGE:-vim:latest}" \
-    "$@"
+  --userns=keep-id \
+  --security-opt label=disable \
+  -v "$(pwd):/workspace:z" \
+  -v "${HOME}/.gitconfig:/home/$(whoami)/.gitconfig:ro" \
+  --network=host \
+  "${env_args[@]}" \
+  "${DEVENV_VIM_IMAGE:-vim:latest}" \
+  "$@"
