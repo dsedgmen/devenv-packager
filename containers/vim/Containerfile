@@ -1,0 +1,59 @@
+# Vim image — Fedora + dsedgmen/devenv COPR RPMs (configs/helpers from packages).
+ARG FEDORA_VERSION=45
+FROM registry.fedoraproject.org/fedora:${FEDORA_VERSION}
+
+LABEL maintainer="devenv-packager"
+LABEL org.opencontainers.image.title="devenv vim"
+LABEL description="Vim with devenv COPR packages and Fedora LSP RPMs"
+
+ARG FEDORA_VERSION=45
+
+RUN dnf install -y dnf-plugins-core \
+    && dnf copr enable -y dsedgmen/devenv \
+    && dnf install -y \
+        vim-enhanced \
+        vim-ale \
+        devenv-ai-assistant \
+        devenv-ai-helper \
+        devenv-lsp-setup \
+        devenv-code-flowchart \
+        devenv-image-inspect \
+        python3-lsp-server \
+        gopls \
+        nodejs-bash-language-server \
+        rust-analyzer \
+        clang-tools-extra \
+        vim-fugitive \
+        vim-gitgutter \
+        vim-nerdtree \
+        vim-ctrlp \
+        vim-commentary \
+        vim-rhubarb \
+        vim-powerline \
+        git \
+        python3 \
+        python3-google-genai \
+        curl \
+    && printf '%s\n' \
+        'source /usr/share/devenv-ai-assistant/vimrc' \
+        'source /usr/share/devenv-lsp-setup/vim-ale-config.vim' \
+        > /etc/vimrc.devenv \
+    && dnf clean all
+
+ARG USER_UID=1000
+ARG USER_GID=1000
+ARG USERNAME=vimuser
+
+RUN groupadd -g ${USER_GID} ${USERNAME} && \
+    useradd -m -u ${USER_UID} -g ${USER_GID} -s /bin/bash ${USERNAME}
+
+USER ${USERNAME}
+WORKDIR /workspace
+
+ENV DEVENV_AI_BACKEND=ollama
+ENV EDITOR=vim
+
+VOLUME ["/workspace"]
+
+ENTRYPOINT ["vim", "-u", "/etc/vimrc.devenv"]
+CMD []

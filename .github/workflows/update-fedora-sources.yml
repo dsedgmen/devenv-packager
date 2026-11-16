@@ -1,0 +1,69 @@
+name: Update Fedora sources
+
+on:
+  schedule:
+    # Mondays 06:00 UTC
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    name: Bump Fedora packages / base version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Refresh lookaside pins (and newer Fedora if available)
+        id: update
+        run: |
+          set -euo pipefail
+          chmod +x scripts/update-fedora-sources.py
+          out="$(python3 scripts/update-fedora-sources.py --check-newer-fedora)"
+          echo "$out"
+          fedora="$(echo "$out" | sed -n 's/^fedora=//p' | tail -1)"
+          changed="$(echo "$out" | sed -n 's/^CHANGED=//p' | tail -1)"
+          echo "fedora=$fedora" >> "$GITHUB_OUTPUT"
+          echo "changed=$changed" >> "$GITHUB_OUTPUT"
+
+      - name: Detect file changes
+        id: diff
+        run: |
+          if git diff --quiet && [ -z "$(git ls-files --others --exclude-standard)" ]; then
+            echo "changed=no" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=yes" >> "$GITHUB_OUTPUT"
+            git status --short
+          fi
+
+      - name: Create pull request
+        if: steps.diff.outputs.changed == 'yes'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: |
+            Bump Fedora ${{ steps.update.outputs.fedora }} Flatpak sources.
+
+            Refresh lookaside SHA256 pins from dist-git and align
+            org.fedoraproject.Platform/Sdk + container bases.
+          title: "chore: bump Fedora ${{ steps.update.outputs.fedora }} sources"
+          body: |
+            Automated refresh from `scripts/update-fedora-sources.py`.
+
+            - Fedora base: **${{ steps.update.outputs.fedora }}** (`org.fedoraproject.Platform/Sdk//f${{ steps.update.outputs.fedora }}`)
+            - Lookaside package versions/SHA256 updated from Fedora dist-git
+            - Container `FROM registry.fedoraproject.org/fedora:${{ steps.update.outputs.fedora }}` aligned when the base moves
+
+            Please review the diff, then merge to publish.
+          branch: cursor/update-fedora-sources
+          delete-branch: true
+          labels: dependencies

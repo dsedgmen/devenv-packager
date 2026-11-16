@@ -1,0 +1,9 @@
+# devenv-ai-packaging agent rules
+
+Follow [AGENTS.md](../../AGENTS.md) in full. Summary:
+
+- Own containers + Flatpak only; editor AI configs live in devenv-ai-assistant; CLI in devenv-ai-helper; LSP/TS in devenv-lsp-setup.
+- Always stage via `scripts/prepare-build-context.sh` — never copy from `~/.config` / `~/.local` as source of truth.
+- Never commit `build-context/`, staged helper binaries, secrets, or prompts.
+- CI must not call third-party AI APIs with repo content.
+- Verify with `./scripts/prepare-build-context.sh` when siblings are available.

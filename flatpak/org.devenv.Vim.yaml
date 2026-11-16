@@ -1,0 +1,92 @@
+app-id: org.devenv.Vim
+runtime: org.fedoraproject.Platform
+runtime-version: f45
+sdk: org.fedoraproject.Sdk
+command: vim
+
+finish-args:
+  # Filesystem access
+  - --filesystem=host
+  - --filesystem=xdg-config/git:ro
+
+  # Network for AI backends
+  - --share=network
+
+  # IPC for clipboard
+  - --share=ipc
+  - --socket=x11
+  - --socket=wayland
+
+  # Device access
+  - --device=dri
+
+modules:
+  # Fedora f45 vim Source0 (lookaside = SRPM payload), not a binary RPM
+  - name: vim
+    buildsystem: simple
+    build-commands:
+      - ./configure --prefix=/app --with-features=huge --enable-python3interp=yes
+      - make -j"${FLATPAK_BUILDER_N_JOBS}"
+      - make install
+    sources:
+      - type: archive
+        url: https://src.fedoraproject.org/repo/pkgs/vim/vim-9.2-1302.tar.bz2/sha512/a833e4213157e0c0b38eb75dc81fd74940a14af99978cbf517bc2068ef4e3030bcf6b8dc281d9384f175102b459434d30422aefae2ffd64542cb1bbdaf1fe447/vim-9.2-1302.tar.bz2
+        sha256: 53a30c98cede802b420f4021e44d30170f30d5318dd2e79fa1f497b557f6732e
+
+  # Fedora f45 python-lsp-server Source0
+  - name: python-lsp-server
+    buildsystem: simple
+    build-commands:
+      - pip3 install --prefix=/app --no-deps --no-build-isolation .
+    sources:
+      - type: archive
+        url: https://src.fedoraproject.org/repo/pkgs/python-lsp-server/python-lsp-server-1.14.0.tar.gz/sha512/72d6a86887355111a63569a11443f6c3dd910c61ff9084284cb428f6963d0dc03594a05049aca4306f5af609dac7a7db351bb6ff1b499ffbbdf74bec83cce9fa/python-lsp-server-1.14.0.tar.gz
+        sha256: 6cd33b9dc7b09fb58919a02c7f3636f5933103946c2fd12a1f24c5101ff21650
+
+  # Fedora f45 vim-ale Source0
+  - name: vim-ale
+    buildsystem: simple
+    build-commands:
+      - mkdir -p /app/share/vim/vimfiles
+      - cp -a * /app/share/vim/vimfiles/
+    sources:
+      - type: archive
+        url: https://src.fedoraproject.org/repo/pkgs/vim-ale/ale-4.0.0.tar.gz/sha512/cfee336be11b311ae6566d24cdd21aa21ca50fd3e6fbab6bd822de4506c4586d7cb5617ee912884c97ed93f867f374c1fdabd3cbfc07d377877d224cdc1aeef1/ale-4.0.0.tar.gz
+        sha256: fc6fd9640eb03b0fa1e2ebd40455b87e39119e99b78212d8f3b1441de3a7a8bc
+
+  # Fedora f45 vim-fugitive Source0
+  - name: vim-fugitive
+    buildsystem: simple
+    build-commands:
+      - mkdir -p /app/share/vim/vimfiles
+      - cp -a * /app/share/vim/vimfiles/
+    sources:
+      - type: archive
+        url: https://src.fedoraproject.org/repo/pkgs/vim-fugitive/vim-fugitive-3.7.tar.gz/sha512/8252b69c6183f5b710739eb68ecb3fbdfad52df3dbee0a3a04ad33f410b489d7fcf1c0bde0cb2d53995a6b4e34191c165c652d08e6145789a88f8c46bfcddf56/vim-fugitive-3.7.tar.gz
+        sha256: 1deeb9fffe3e3299375842657cb2d6b7059a67d3373dc0ab52c16d7a7c99ea2a
+
+  # AI helper + vimrc (from scripts/prepare-build-context.sh → ../build-context)
+  - name: devenv-ai-helper
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 devenv-ai-helper /app/bin/devenv-ai-helper
+      - ln -s devenv-ai-helper /app/bin/vim-ai-helper
+      - install -Dm644 vimrc /app/share/vim/vimrc
+    sources:
+      - type: file
+        path: ../build-context/vimrc
+      - type: file
+        path: ../build-context/devenv-ai-helper
+
+add-extensions:
+  org.devenv.Vim.LSP:
+    directory: lsp
+    subdirectories: true
+    no-autodownload: false
+    autodelete: false
+
+  org.devenv.Vim.Plugin:
+    directory: plugins
+    subdirectories: true
+    no-autodownload: false
+    autodelete: false

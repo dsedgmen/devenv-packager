@@ -1,0 +1,159 @@
+app-id: org.devenv.Neovim
+runtime: org.fedoraproject.Platform
+runtime-version: f45
+sdk: org.fedoraproject.Sdk
+command: nvim
+
+finish-args:
+  # Filesystem access
+  - --filesystem=host
+  - --filesystem=xdg-config/git:ro
+
+  # Network for AI backends
+  - --share=network
+
+  # IPC for clipboard
+  - --share=ipc
+  - --socket=x11
+  - --socket=wayland
+
+  # Device access
+  - --device=dri
+
+modules:
+  # Fedora f45 neovim Source0 + Source3 vendor (bundled treesitter deps; offline)
+  - name: neovim
+    buildsystem: simple
+    build-commands:
+      - mkdir -p .deps/build
+      - ln -sfr neovim-0.12.6-vendor .deps/build/downloads
+      - cmake -S cmake.deps -B .deps -G Ninja -DCMAKE_BUILD_TYPE=Release
+      - cmake --build .deps
+      - cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/app
+      - cmake --build build
+      - cmake --install build
+    sources:
+      - type: archive
+        url: https://src.fedoraproject.org/repo/pkgs/neovim/neovim-0.12.6.tar.gz/sha512/7baf1a6c5e46845b415f522ad17129a3af33c698356f1f7f276481a7f55e3fc994ba1399aac85e1cd1b8436cc59f733ff1fddc12cdb027c295be1abd2dd20448/neovim-0.12.6.tar.gz
+        sha256: 8629fdc5eb951daf89a76f68cad12f2f1e03fab0d539150ba3fe6d177d254b7f
+      - type: archive
+        url: https://src.fedoraproject.org/repo/pkgs/neovim/neovim-0.12.6-vendor.tar.gz/sha512/65ea5c83822af486312945ff41f57363739e479d9abd14de57ab05e226b73f29728215985dece7cee6f07b79f8cb16cce8745409909b533fa1244e45e5880ec5/neovim-0.12.6-vendor.tar.gz
+        sha256: 233fd89d1bdf1ef312259029896a645ef302f13010202ce727cdf240123b28c0
+        dest: neovim-0.12.6-vendor
+
+  # Fedora f45 python-lsp-server Source0
+  - name: python-lsp-server
+    buildsystem: simple
+    build-commands:
+      - pip3 install --prefix=/app --no-deps --no-build-isolation .
+    sources:
+      - type: archive
+        url: https://src.fedoraproject.org/repo/pkgs/python-lsp-server/python-lsp-server-1.14.0.tar.gz/sha512/72d6a86887355111a63569a11443f6c3dd910c61ff9084284cb428f6963d0dc03594a05049aca4306f5af609dac7a7db351bb6ff1b499ffbbdf74bec83cce9fa/python-lsp-server-1.14.0.tar.gz
+        sha256: 6cd33b9dc7b09fb58919a02c7f3636f5933103946c2fd12a1f24c5101ff21650
+
+  # Fedora f45 vim-fugitive Source0
+  - name: vim-fugitive
+    buildsystem: simple
+    build-commands:
+      - mkdir -p /app/share/nvim/site/pack/plugins/start/fugitive
+      - cp -a * /app/share/nvim/site/pack/plugins/start/fugitive/
+    sources:
+      - type: archive
+        url: https://src.fedoraproject.org/repo/pkgs/vim-fugitive/vim-fugitive-3.7.tar.gz/sha512/8252b69c6183f5b710739eb68ecb3fbdfad52df3dbee0a3a04ad33f410b489d7fcf1c0bde0cb2d53995a6b4e34191c165c652d08e6145789a88f8c46bfcddf56/vim-fugitive-3.7.tar.gz
+        sha256: 1deeb9fffe3e3299375842657cb2d6b7059a67d3373dc0ab52c16d7a7c99ea2a
+
+  # Fedora f45 vim-gitgutter Source0
+  - name: vim-gitgutter
+    buildsystem: simple
+    build-commands:
+      - mkdir -p /app/share/nvim/site/pack/plugins/start/gitgutter
+      - cp -a * /app/share/nvim/site/pack/plugins/start/gitgutter/
+    sources:
+      - type: archive
+        url: https://src.fedoraproject.org/repo/pkgs/vim-gitgutter/vim-gitgutter-0.20230901gitf7b9766.tar.gz/sha512/156399d3d9c781d63362eece5bdbf6a847ae4e2c41c3e2208ffed290c4bfaa2e0feb3f71d82a631f5629af919227b510d5e4d87baca039062cd0e4ed9cbafe6c/vim-gitgutter-0.20230901gitf7b9766.tar.gz
+        sha256: b81ac74b62c218beabab3bcc73ee47ba0cf1b8a9d9e658ce9a3957b18c5fb22c
+
+  # Fedora f45 vim-nerdtree Source0
+  - name: vim-nerdtree
+    buildsystem: simple
+    build-commands:
+      - mkdir -p /app/share/nvim/site/pack/plugins/start/nerdtree
+      - cp -a * /app/share/nvim/site/pack/plugins/start/nerdtree/
+    sources:
+      - type: archive
+        url: https://src.fedoraproject.org/repo/pkgs/vim-nerdtree/vim-nerdtree-7.1.3.tar.gz/sha512/f700facf00a837ba44a1844bc68633d88333e2d1a2debc83ec1fee4897dfc30bbc1abe3f4cc89c6b533a7db74e29470f344a6180de3d8e7fe638457d89b5ef5b/vim-nerdtree-7.1.3.tar.gz
+        sha256: 1fd6a7e9ca3427c82dcf15657fff6c3e090e5d9605a7c3b382fc22c0bb3834e9
+
+  # Fedora f45 vim-ctrlp Source0
+  - name: vim-ctrlp
+    buildsystem: simple
+    build-commands:
+      - mkdir -p /app/share/nvim/site/pack/plugins/start/ctrlp
+      - cp -a * /app/share/nvim/site/pack/plugins/start/ctrlp/
+    sources:
+      - type: archive
+        url: https://src.fedoraproject.org/repo/pkgs/vim-ctrlp/vim-ctrlp-2e773fd.tar.gz/sha512/ec79125fc53a6dabfa2ce1fc1006b3b992ccd9db3c2eb489e197d00509d3853673441583cb08c57269feb81621bf7a7d1f9185d7c95bfe137460a7248ee8ab70/vim-ctrlp-2e773fd.tar.gz
+        sha256: bd16f1a3e5eafd45c94218ffe8357ba0e731989170a02fd53376ac8f9b8be35e
+
+  # Fedora f45 vim-commentary Source0 (lookaside still keyed by md5 in dist-git)
+  - name: vim-commentary
+    buildsystem: simple
+    build-commands:
+      - mkdir -p /app/share/nvim/site/pack/plugins/start/commentary
+      - cp -a * /app/share/nvim/site/pack/plugins/start/commentary/
+    sources:
+      - type: archive
+        url: https://src.fedoraproject.org/repo/pkgs/vim-commentary/vim-commentary-1.3.tar.gz/md5/814846695d5254a46118d574f33d9dbb/vim-commentary-1.3.tar.gz
+        sha256: 6c790529af9db49d9156ff06301f3a1ee553f751adf044d64054cba95dee8194
+
+  # AI helper and configs (from scripts/prepare-build-context.sh → ../build-context)
+  - name: devenv-ai-assistant
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 devenv-ai-helper /app/bin/devenv-ai-helper
+      - ln -s devenv-ai-helper /app/bin/vim-ai-helper
+      - install -Dm644 init.lua /app/share/nvim/init.lua
+      - install -Dm644 lsp-config.lua /app/share/nvim/lua/lsp-config.lua
+      - install -Dm644 treesitter-config.lua /app/share/nvim/lua/treesitter-config.lua
+      - install -Dm644 plugins-config.lua /app/share/nvim/lua/plugins-config.lua
+    sources:
+      - type: file
+        path: ../build-context/devenv-ai-helper
+      - type: file
+        path: ../build-context/nvim/init.lua
+      - type: file
+        path: ../build-context/nvim/lua/lsp-config.lua
+      - type: file
+        path: ../build-context/nvim/lua/treesitter-config.lua
+      - type: file
+        path: ../build-context/nvim/lua/plugins-config.lua
+
+# Extensions for LSP servers and tree-sitter parsers
+add-extensions:
+  # LSP servers as addons
+  org.devenv.Neovim.LSP.Python:
+    directory: lsp/python
+    no-autodownload: false
+    autodelete: false
+
+  org.devenv.Neovim.LSP.Go:
+    directory: lsp/go
+    no-autodownload: false
+    autodelete: false
+
+  org.devenv.Neovim.LSP.Bash:
+    directory: lsp/bash
+    no-autodownload: false
+    autodelete: false
+
+  org.devenv.Neovim.LSP.Rust:
+    directory: lsp/rust
+    no-autodownload: false
+    autodelete: false
+
+  # Tree-sitter parsers as addons
+  org.devenv.Neovim.TreeSitter:
+    directory: tree-sitter
+    subdirectories: true
+    no-autodownload: false
+    autodelete: false

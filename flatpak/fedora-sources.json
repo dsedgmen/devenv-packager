@@ -1,0 +1,133 @@
+{
+  "fedora": 45,
+  "runtime": "org.fedoraproject.Platform",
+  "sdk": "org.fedoraproject.Sdk",
+  "runtime_repo": "oci+https://registry.fedoraproject.org",
+  "packages": {
+    "vim": {
+      "distgit": "vim",
+      "files": [
+        {
+          "filename": "vim-9.2-1302.tar.bz2",
+          "sha256": "53a30c98cede802b420f4021e44d30170f30d5318dd2e79fa1f497b557f6732e",
+          "sha512": "a833e4213157e0c0b38eb75dc81fd74940a14af99978cbf517bc2068ef4e3030bcf6b8dc281d9384f175102b459434d30422aefae2ffd64542cb1bbdaf1fe447"
+        }
+      ]
+    },
+    "neovim": {
+      "distgit": "neovim",
+      "files": [
+        {
+          "filename": "neovim-0.12.6.tar.gz",
+          "sha256": "8629fdc5eb951daf89a76f68cad12f2f1e03fab0d539150ba3fe6d177d254b7f",
+          "sha512": "7baf1a6c5e46845b415f522ad17129a3af33c698356f1f7f276481a7f55e3fc994ba1399aac85e1cd1b8436cc59f733ff1fddc12cdb027c295be1abd2dd20448"
+        },
+        {
+          "filename": "neovim-0.12.6-vendor.tar.gz",
+          "sha256": "233fd89d1bdf1ef312259029896a645ef302f13010202ce727cdf240123b28c0",
+          "sha512": "65ea5c83822af486312945ff41f57363739e479d9abd14de57ab05e226b73f29728215985dece7cee6f07b79f8cb16cce8745409909b533fa1244e45e5880ec5"
+        }
+      ]
+    },
+    "python-lsp-server": {
+      "distgit": "python-lsp-server",
+      "files": [
+        {
+          "filename": "python-lsp-server-1.14.0.tar.gz",
+          "sha256": "6cd33b9dc7b09fb58919a02c7f3636f5933103946c2fd12a1f24c5101ff21650",
+          "sha512": "72d6a86887355111a63569a11443f6c3dd910c61ff9084284cb428f6963d0dc03594a05049aca4306f5af609dac7a7db351bb6ff1b499ffbbdf74bec83cce9fa"
+        }
+      ]
+    },
+    "python-jedi": {
+      "distgit": "python-jedi",
+      "files": [
+        {
+          "filename": "jedi-0.20.0.tar.gz",
+          "sha256": "a5fc00c5165862644c0d8265b9899dc3db9782edf5f98fa3a5a18d20c61db701",
+          "sha512": "fef5ed57c005e4b1a87be1b43e8e19b87d103a1b6d4740c179be7b1d36c1a3a3bbc3eb5a6b48ac8cc8c0d9e144170d694ee34ec28193529d673d07caf87be54d"
+        }
+      ]
+    },
+    "python-lsp-black": {
+      "distgit": "python-lsp-black",
+      "files": [
+        {
+          "filename": "python-lsp-black-2.0.0.tar.gz",
+          "sha256": "6387584c38e5758431f5d61c269860892f57b7442c0cf9bd712ad64231b9bb1c",
+          "sha512": "e374ea34ac53e0d78ba198814210d9d7293e18b8fc7b22bb288621a994c8c9d492cc9c99c40cd1574b618add518671430e1e88f32e93e4c95507373932c08dc0"
+        }
+      ]
+    },
+    "tree-sitter-python": {
+      "distgit": "tree-sitter-python",
+      "files": [
+        {
+          "filename": "tree-sitter-python-0.25.0.tar.gz",
+          "sha256": "4609a3665a620e117acf795ff01b9e965880f81745f287a16336f4ca86cf270c",
+          "sha512": "9491de1eb1cb3962aa4894fad5b6bcc05dc3ddeef902a1982d0ac6d7f3baa78fc52c2a21d1e953b1859ed7a104c8182dbd8bd91ced41e63cc2a647f779d86456"
+        }
+      ]
+    },
+    "vim-ale": {
+      "distgit": "vim-ale",
+      "files": [
+        {
+          "filename": "ale-4.0.0.tar.gz",
+          "sha256": "fc6fd9640eb03b0fa1e2ebd40455b87e39119e99b78212d8f3b1441de3a7a8bc",
+          "sha512": "cfee336be11b311ae6566d24cdd21aa21ca50fd3e6fbab6bd822de4506c4586d7cb5617ee912884c97ed93f867f374c1fdabd3cbfc07d377877d224cdc1aeef1"
+        }
+      ]
+    },
+    "vim-fugitive": {
+      "distgit": "vim-fugitive",
+      "files": [
+        {
+          "filename": "vim-fugitive-3.7.tar.gz",
+          "sha256": "1deeb9fffe3e3299375842657cb2d6b7059a67d3373dc0ab52c16d7a7c99ea2a",
+          "sha512": "8252b69c6183f5b710739eb68ecb3fbdfad52df3dbee0a3a04ad33f410b489d7fcf1c0bde0cb2d53995a6b4e34191c165c652d08e6145789a88f8c46bfcddf56"
+        }
+      ]
+    },
+    "vim-gitgutter": {
+      "distgit": "vim-gitgutter",
+      "files": [
+        {
+          "filename": "vim-gitgutter-0.20230901gitf7b9766.tar.gz",
+          "sha256": "b81ac74b62c218beabab3bcc73ee47ba0cf1b8a9d9e658ce9a3957b18c5fb22c",
+          "sha512": "156399d3d9c781d63362eece5bdbf6a847ae4e2c41c3e2208ffed290c4bfaa2e0feb3f71d82a631f5629af919227b510d5e4d87baca039062cd0e4ed9cbafe6c"
+        }
+      ]
+    },
+    "vim-nerdtree": {
+      "distgit": "vim-nerdtree",
+      "files": [
+        {
+          "filename": "vim-nerdtree-7.1.3.tar.gz",
+          "sha256": "1fd6a7e9ca3427c82dcf15657fff6c3e090e5d9605a7c3b382fc22c0bb3834e9",
+          "sha512": "f700facf00a837ba44a1844bc68633d88333e2d1a2debc83ec1fee4897dfc30bbc1abe3f4cc89c6b533a7db74e29470f344a6180de3d8e7fe638457d89b5ef5b"
+        }
+      ]
+    },
+    "vim-ctrlp": {
+      "distgit": "vim-ctrlp",
+      "files": [
+        {
+          "filename": "vim-ctrlp-2e773fd.tar.gz",
+          "sha256": "bd16f1a3e5eafd45c94218ffe8357ba0e731989170a02fd53376ac8f9b8be35e",
+          "sha512": "ec79125fc53a6dabfa2ce1fc1006b3b992ccd9db3c2eb489e197d00509d3853673441583cb08c57269feb81621bf7a7d1f9185d7c95bfe137460a7248ee8ab70"
+        }
+      ]
+    },
+    "vim-commentary": {
+      "distgit": "vim-commentary",
+      "files": [
+        {
+          "filename": "vim-commentary-1.3.tar.gz",
+          "sha256": "6c790529af9db49d9156ff06301f3a1ee553f751adf044d64054cba95dee8194",
+          "md5": "814846695d5254a46118d574f33d9dbb"
+        }
+      ]
+    }
+  }
+}

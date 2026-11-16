@@ -1,0 +1,42 @@
+# Flatpak Extension: Python LSP Server
+# Install with: flatpak install org.devenv.Neovim.LSP.Python
+# Sources: Fedora f45 lookaside (SRPM Source0), SHA256-pinned. No cargo/PyPI binary wheels.
+
+id: org.devenv.Neovim.LSP.Python
+branch: stable
+runtime: org.fedoraproject.Platform
+runtime-version: f45
+sdk: org.fedoraproject.Sdk
+build-extension: true
+separate-locales: false
+
+build-options:
+  prefix: /app/lsp/python
+
+modules:
+  - name: python-jedi
+    buildsystem: simple
+    build-commands:
+      - pip3 install --prefix=/app/lsp/python --no-deps --no-build-isolation .
+    sources:
+      - type: archive
+        url: https://src.fedoraproject.org/repo/pkgs/python-jedi/jedi-0.20.0.tar.gz/sha512/fef5ed57c005e4b1a87be1b43e8e19b87d103a1b6d4740c179be7b1d36c1a3a3bbc3eb5a6b48ac8cc8c0d9e144170d694ee34ec28193529d673d07caf87be54d/jedi-0.20.0.tar.gz
+        sha256: a5fc00c5165862644c0d8265b9899dc3db9782edf5f98fa3a5a18d20c61db701
+
+  - name: python-lsp-server
+    buildsystem: simple
+    build-commands:
+      - pip3 install --prefix=/app/lsp/python --no-deps --no-build-isolation .
+    sources:
+      - type: archive
+        url: https://src.fedoraproject.org/repo/pkgs/python-lsp-server/python-lsp-server-1.14.0.tar.gz/sha512/72d6a86887355111a63569a11443f6c3dd910c61ff9084284cb428f6963d0dc03594a05049aca4306f5af609dac7a7db351bb6ff1b499ffbbdf74bec83cce9fa/python-lsp-server-1.14.0.tar.gz
+        sha256: 6cd33b9dc7b09fb58919a02c7f3636f5933103946c2fd12a1f24c5101ff21650
+
+  - name: python-lsp-black
+    buildsystem: simple
+    build-commands:
+      - pip3 install --prefix=/app/lsp/python --no-deps --no-build-isolation .
+    sources:
+      - type: archive
+        url: https://src.fedoraproject.org/repo/pkgs/python-lsp-black/python-lsp-black-2.0.0.tar.gz/sha512/e374ea34ac53e0d78ba198814210d9d7293e18b8fc7b22bb288621a994c8c9d492cc9c99c40cd1574b618add518671430e1e88f32e93e4c95507373932c08dc0/python-lsp-black-2.0.0.tar.gz
+        sha256: 6387584c38e5758431f5d61c269860892f57b7442c0cf9bd712ad64231b9bb1c

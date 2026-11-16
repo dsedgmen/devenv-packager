@@ -1,0 +1,25 @@
+# Flatpak Extension: Tree-sitter Python Parser
+# Install with: flatpak install org.devenv.Neovim.TreeSitter.Python
+# Source: Fedora f45 tree-sitter-python lookaside (SRPM Source0), SHA256-pinned.
+
+id: org.devenv.Neovim.TreeSitter.Python
+branch: stable
+runtime: org.fedoraproject.Platform
+runtime-version: f45
+sdk: org.fedoraproject.Sdk
+build-extension: true
+separate-locales: false
+
+build-options:
+  prefix: /app/tree-sitter/python
+
+modules:
+  - name: tree-sitter-python
+    buildsystem: simple
+    build-commands:
+      - gcc -shared -fPIC -Isrc -o python.so src/parser.c src/scanner.c
+      - install -Dm755 python.so /app/tree-sitter/python/python.so
+    sources:
+      - type: archive
+        url: https://src.fedoraproject.org/repo/pkgs/tree-sitter-python/tree-sitter-python-0.25.0.tar.gz/sha512/9491de1eb1cb3962aa4894fad5b6bcc05dc3ddeef902a1982d0ac6d7f3baa78fc52c2a21d1e953b1859ed7a104c8182dbd8bd91ced41e63cc2a647f779d86456/tree-sitter-python-0.25.0.tar.gz
+        sha256: 4609a3665a620e117acf795ff01b9e965880f81745f287a16336f4ca86cf270c

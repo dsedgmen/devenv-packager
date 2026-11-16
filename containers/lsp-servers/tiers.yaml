@@ -1,0 +1,152 @@
+# LSP trust categories (NOT image tags).
+#
+# green  — Fedora ships an LSP RPM → package as lsp-<id>
+# yellow — non-RPM LSP promoted after pin + smoke + Trivy → package as lsp-<id>
+# red    — not packaged (default for grammar-only / unpromoted languages)
+#
+# Images: ghcr.io/dsedgmen/devenv-packager/lsp-<id>:{latest,sha,...}
+# Label:  org.devenv.lsp.tier=<green|yellow>
+#
+# Promote red → yellow: fill pin fields, add Containerfile target, pass
+#   ./promote-check.sh <id>
+# then set tier: yellow and ship: true in the same PR.
+
+fedora: 45
+
+languages:
+  # --- green: Fedora LSP RPM ---
+  - id: python
+    tier: green
+    ship: true
+    aliases: [python, pylsp]
+    fedora_pkg: python3-lsp-server
+    tree_sitter_pkg: libtree-sitter-python
+    command: [pylsp]
+    binary: pylsp
+
+  - id: go
+    tier: green
+    ship: true
+    aliases: [go, gopls]
+    fedora_pkg: gopls
+    tree_sitter_pkg: libtree-sitter-go
+    command: [gopls]
+    binary: gopls
+
+  - id: bash
+    tier: green
+    ship: true
+    aliases: [bash, bashls, sh]
+    fedora_pkg: nodejs-bash-language-server
+    tree_sitter_pkg: libtree-sitter-bash
+    command: [bash-language-server, start]
+    binary: bash-language-server
+
+  - id: rust
+    tier: green
+    ship: true
+    aliases: [rust, rust-analyzer]
+    fedora_pkg: rust-analyzer
+    tree_sitter_pkg: libtree-sitter-rust
+    command: [rust-analyzer]
+    binary: rust-analyzer
+
+  - id: c-cpp
+    tier: green
+    ship: true
+    aliases: [c, cpp, clangd]
+    fedora_pkg: clang-tools-extra
+    tree_sitter_pkg: libtree-sitter-c
+    command: [clangd]
+    binary: clangd
+
+  # --- red until promote-check.sh passes (pin + smoke + Trivy) ---
+  - id: javascript
+    tier: red
+    ship: false
+    aliases: [javascript, js]
+    tree_sitter_pkg: libtree-sitter-javascript
+    planned_source: npm:typescript-language-server
+    pin: null
+    command: null
+    binary: null
+
+  - id: typescript
+    tier: red
+    ship: false
+    aliases: [typescript, ts]
+    tree_sitter_pkg: libtree-sitter-typescript
+    planned_source: npm:typescript-language-server
+    pin: null
+    command: null
+    binary: null
+
+  - id: json
+    tier: red
+    ship: false
+    aliases: [json]
+    tree_sitter_pkg: libtree-sitter-json
+    planned_source: npm:vscode-langservers-extracted
+    pin: null
+    command: null
+    binary: null
+
+  - id: yaml
+    tier: red
+    ship: false
+    aliases: [yaml]
+    tree_sitter_pkg: libtree-sitter-yaml
+    planned_source: npm:yaml-language-server
+    pin: null
+    command: null
+    binary: null
+
+  - id: html
+    tier: red
+    ship: false
+    aliases: [html]
+    tree_sitter_pkg: libtree-sitter-html
+    planned_source: npm:vscode-langservers-extracted
+    pin: null
+    command: null
+    binary: null
+
+  - id: css
+    tier: red
+    ship: false
+    aliases: [css]
+    tree_sitter_pkg: libtree-sitter-css
+    planned_source: npm:vscode-langservers-extracted
+    pin: null
+    command: null
+    binary: null
+
+  - id: lua
+    tier: red
+    ship: false
+    aliases: [lua]
+    tree_sitter_pkg: libtree-sitter-lua
+    planned_source: github:LuaLS/lua-language-server
+    pin: null
+    command: null
+    binary: null
+
+  - id: java
+    tier: red
+    ship: false
+    aliases: [java]
+    tree_sitter_pkg: libtree-sitter-java
+    planned_source: eclipse-jdtls
+    pin: null
+    command: null
+    binary: null
+
+  - id: ruby
+    tier: red
+    ship: false
+    aliases: [ruby]
+    tree_sitter_pkg: libtree-sitter-ruby
+    planned_source: gem:ruby-lsp
+    pin: null
+    command: null
+    binary: null

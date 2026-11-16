@@ -1,0 +1,50 @@
+# Staged Flatpak build inputs (from prepare-build-context.sh)
+build-context/
+.deps/
+
+# Flatpak / container build artifacts
+repo/
+build-neovim/
+build-vim/
+build-ext-*/
+*.flatpak
+.flatpak-builder/
+
+# Secrets / credentials (never commit)
+.env
+.env.*
+!.env.example
+*.token
+*.pem
+*.key
+credentials.json
+secrets.yaml
+secrets.yml
+
+# Local agent / prompt config
+agents.json
+**/agents.local.json
+prompts/
+prompt/
+*.prompt
+*.prompts
+*_prompt.txt
+*_prompt.md
+system_prompt*
+.system-prompt*
+
+# Chat / context dumps
+*.chat.json
+*-ai-history.json
+**/history.json
+context/
+*.context
+
+# Editor / tooling
+__pycache__/
+*.py[cod]
+.idea/
+.vscode/
+*.swp
+*~
+.DS_Store

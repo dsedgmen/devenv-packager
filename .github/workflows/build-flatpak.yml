@@ -1,0 +1,215 @@
+name: Build Flatpak
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'flatpak/**'
+      - 'scripts/**'
+      - '.github/workflows/build-flatpak.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'flatpak/**'
+      - 'scripts/**'
+  release:
+    types: [published]
+  workflow_dispatch:
+
+env:
+  FEDORA_VERSION_FILE: flatpak/FEDORA_VERSION
+
+jobs:
+  prepare:
+    name: Prepare build context
+    runs-on: ubuntu-latest
+    outputs:
+      fedora: ${{ steps.ver.outputs.fedora }}
+    steps:
+      - name: Checkout packaging
+        uses: actions/checkout@v5
+
+      - name: Read Fedora version
+        id: ver
+        run: echo "fedora=$(tr -d '[:space:]' < flatpak/FEDORA_VERSION)" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout devenv-ai-assistant
+        uses: actions/checkout@v5
+        with:
+          repository: dsedgmen/devenv-ai-assistant
+          path: .deps/devenv-ai-assistant
+
+      - name: Checkout devenv-ai-helper
+        uses: actions/checkout@v5
+        with:
+          repository: dsedgmen/devenv-ai-helper
+          path: .deps/devenv-ai-helper
+
+      - name: Checkout devenv-lsp-setup
+        uses: actions/checkout@v5
+        with:
+          repository: dsedgmen/devenv-lsp-setup
+          path: .deps/devenv-lsp-setup
+
+      - name: Stage build context
+        env:
+          DEVENV_AI_DIR: ${{ github.workspace }}/.deps/devenv-ai-assistant
+          DEVENV_AI_HELPER_DIR: ${{ github.workspace }}/.deps/devenv-ai-helper
+          DEVENV_LSP_SETUP_DIR: ${{ github.workspace }}/.deps/devenv-lsp-setup
+        run: |
+          chmod +x scripts/prepare-build-context.sh
+          ./scripts/prepare-build-context.sh
+
+      - name: Upload build-context
+        uses: actions/upload-artifact@v4
+        with:
+          name: flatpak-build-context
+          path: build-context/
+          retention-days: 1
+
+  build-neovim-flatpak:
+    name: Build Neovim Flatpak
+    needs: [prepare]
+    runs-on: ubuntu-latest
+    container:
+      image: registry.fedoraproject.org/fedora:${{ needs.prepare.outputs.fedora }}
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Download build-context
+        uses: actions/download-artifact@v4
+        with:
+          name: flatpak-build-context
+          path: build-context
+
+      - name: Install Flatpak tooling + Fedora runtime
+        env:
+          FEDORA: ${{ needs.prepare.outputs.fedora }}
+        run: |
+          dnf install -y flatpak flatpak-builder ostree
+          flatpak remote-add --if-not-exists fedora oci+https://registry.fedoraproject.org
+          flatpak install -y fedora \
+            "org.fedoraproject.Platform//f${FEDORA}" \
+            "org.fedoraproject.Sdk//f${FEDORA}"
+
+      - name: Build Flatpak
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          bundle: org.devenv.Neovim.flatpak
+          manifest-path: flatpak/org.devenv.Neovim.yaml
+          cache-key: flatpak-neovim-${{ github.sha }}
+          repository-name: fedora
+          repository-url: oci+https://registry.fedoraproject.org
+          upload-artifact: false
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: neovim-flatpak
+          path: org.devenv.Neovim.flatpak
+          retention-days: 7
+
+  build-vim-flatpak:
+    name: Build Vim Flatpak
+    needs: [prepare]
+    runs-on: ubuntu-latest
+    container:
+      image: registry.fedoraproject.org/fedora:${{ needs.prepare.outputs.fedora }}
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Download build-context
+        uses: actions/download-artifact@v4
+        with:
+          name: flatpak-build-context
+          path: build-context
+
+      - name: Install Flatpak tooling + Fedora runtime
+        env:
+          FEDORA: ${{ needs.prepare.outputs.fedora }}
+        run: |
+          dnf install -y flatpak flatpak-builder ostree
+          flatpak remote-add --if-not-exists fedora oci+https://registry.fedoraproject.org
+          flatpak install -y fedora \
+            "org.fedoraproject.Platform//f${FEDORA}" \
+            "org.fedoraproject.Sdk//f${FEDORA}"
+
+      - name: Build Flatpak
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          bundle: org.devenv.Vim.flatpak
+          manifest-path: flatpak/org.devenv.Vim.yaml
+          cache-key: flatpak-vim-${{ github.sha }}
+          repository-name: fedora
+          repository-url: oci+https://registry.fedoraproject.org
+          upload-artifact: false
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vim-flatpak
+          path: org.devenv.Vim.flatpak
+          retention-days: 7
+
+  build-extensions:
+    name: Build Flatpak Extensions
+    needs: [prepare]
+    runs-on: ubuntu-latest
+    container:
+      image: registry.fedoraproject.org/fedora:${{ needs.prepare.outputs.fedora }}
+      options: --privileged
+    strategy:
+      matrix:
+        extension:
+          - name: python-lsp
+            manifest: flatpak/extensions/org.devenv.Neovim.LSP.Python.yaml
+          - name: python-treesitter
+            manifest: flatpak/extensions/org.devenv.Neovim.TreeSitter.Python.yaml
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Flatpak tooling + Fedora runtime
+        env:
+          FEDORA: ${{ needs.prepare.outputs.fedora }}
+        run: |
+          dnf install -y flatpak flatpak-builder ostree
+          flatpak remote-add --if-not-exists fedora oci+https://registry.fedoraproject.org
+          flatpak install -y fedora \
+            "org.fedoraproject.Platform//f${FEDORA}" \
+            "org.fedoraproject.Sdk//f${FEDORA}"
+
+      - name: Build Extension
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          bundle: ${{ matrix.extension.name }}.flatpak
+          manifest-path: ${{ matrix.extension.manifest }}
+          cache-key: flatpak-ext-${{ matrix.extension.name }}-${{ github.sha }}
+          repository-name: fedora
+          repository-url: oci+https://registry.fedoraproject.org
+          upload-artifact: false
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: flatpak-extension-${{ matrix.extension.name }}
+          path: ${{ matrix.extension.name }}.flatpak
+          retention-days: 7
+
+  release:
+    name: Upload to Release
+    needs: [build-neovim-flatpak, build-vim-flatpak, build-extensions]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: flatpaks
+
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            flatpaks/**/*.flatpak

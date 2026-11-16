@@ -1,0 +1,79 @@
+name: Promote LSP (red → yellow)
+
+# Manual or on PRs that touch pin/install paths.
+# Does not publish. Success means the PR may set tier:yellow ship:true.
+
+on:
+  workflow_dispatch:
+    inputs:
+      id:
+        description: Language id from tiers.yaml
+        required: true
+        type: string
+  push:
+    branches: [main]
+    paths:
+      - 'containers/lsp-servers/Containerfile'
+      - 'containers/lsp-servers/tiers.yaml'
+      - 'containers/lsp-servers/promote-check.sh'
+      - '.github/workflows/promote-lsp.yml'
+  pull_request:
+    paths:
+      - 'containers/lsp-servers/Containerfile'
+      - 'containers/lsp-servers/tiers.yaml'
+      - 'containers/lsp-servers/promote-check.sh'
+      - '.github/workflows/promote-lsp.yml'
+
+jobs:
+  promote-check:
+    name: promote-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Trivy
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
+            | sh -s -- -b /usr/local/bin
+
+      - name: Install podman
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y podman
+
+      - name: Resolve candidate id(s)
+        id: ids
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_ID: ${{ inputs.id }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "list=$INPUT_ID" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          list=$(python3 containers/lsp-servers/parse-tiers.py containers/lsp-servers/tiers.yaml --query json \
+            | python3 -c '
+          import json,sys
+          data=json.load(sys.stdin)
+          ids=[]
+          for L in data["languages"]:
+            if L.get("tier")=="red" and L.get("pin"):
+              ids.append(L["id"])
+            elif L.get("tier")=="yellow" and L.get("ship"):
+              ids.append(L["id"])
+          print(" ".join(ids))
+          ')
+          echo "list=$list" >> "$GITHUB_OUTPUT"
+          echo "Candidates: ${list:-<none>}"
+
+      - name: Run promote-check
+        run: |
+          chmod +x containers/lsp-servers/promote-check.sh
+          list="${{ steps.ids.outputs.list }}"
+          if [ -z "$list" ]; then
+            echo "No red-with-pin or yellow languages to check — OK (nothing to promote)."
+            exit 0
+          fi
+          for id in $list; do
+            ./containers/lsp-servers/promote-check.sh "$id"
+          done

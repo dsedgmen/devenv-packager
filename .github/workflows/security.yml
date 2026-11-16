@@ -1,0 +1,59 @@
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - run: find . -name '*.sh' -print0 | xargs -0 -r shellcheck
+
+  trivy:
+    # Vulnerable deps, committed secrets, and misconfig across the tree
+    # (Containerfiles, workflows, scripts). Matches better-gather scan-code.
+    name: Trivy filesystem scan
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Scan the tree
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,secret,misconfig
+          severity: HIGH,CRITICAL
+          format: table
+          exit-code: "1"
+
+      - name: Keep the code scan as an artifact
+        if: always()
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,secret,misconfig
+          severity: HIGH,CRITICAL
+          format: json
+          output: trivy-code.json
+          exit-code: "0"
+
+      - name: Upload the code scan
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-code-${{ github.sha }}
+          path: trivy-code.json
+          if-no-files-found: warn
