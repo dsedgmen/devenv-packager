@@ -94,7 +94,7 @@ jobs:
         env:
           FEDORA: ${{ needs.prepare.outputs.fedora }}
         run: |
-          dnf install -y flatpak flatpak-builder ostree dbus-daemon
+          dnf install -y flatpak flatpak-builder ostree dbus-daemon xorg-x11-server-Xvfb
           flatpak remote-add --if-not-exists fedora oci+https://registry.fedoraproject.org
           dbus-run-session -- flatpak install -y --noninteractive fedora \
             "org.fedoraproject.Platform//f${FEDORA}" \
@@ -137,7 +137,7 @@ jobs:
         env:
           FEDORA: ${{ needs.prepare.outputs.fedora }}
         run: |
-          dnf install -y flatpak flatpak-builder ostree dbus-daemon
+          dnf install -y flatpak flatpak-builder ostree dbus-daemon xorg-x11-server-Xvfb
           flatpak remote-add --if-not-exists fedora oci+https://registry.fedoraproject.org
           dbus-run-session -- flatpak install -y --noninteractive fedora \
             "org.fedoraproject.Platform//f${FEDORA}" \
@@ -181,7 +181,7 @@ jobs:
         env:
           FEDORA: ${{ needs.prepare.outputs.fedora }}
         run: |
-          dnf install -y flatpak flatpak-builder ostree dbus-daemon
+          dnf install -y flatpak flatpak-builder ostree dbus-daemon xorg-x11-server-Xvfb
           flatpak remote-add --if-not-exists fedora oci+https://registry.fedoraproject.org
           dbus-run-session -- flatpak install -y --noninteractive fedora \
             "org.fedoraproject.Platform//f${FEDORA}" \
