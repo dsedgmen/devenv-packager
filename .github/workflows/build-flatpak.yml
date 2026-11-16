@@ -173,8 +173,10 @@ jobs:
       matrix:
         extension:
           - name: python-lsp
+            id: org.devenv.Neovim.LSP.Python
             manifest: flatpak/extensions/org.devenv.Neovim.LSP.Python.yaml
           - name: python-treesitter
+            id: org.devenv.Neovim.TreeSitter.Python
             manifest: flatpak/extensions/org.devenv.Neovim.TreeSitter.Python.yaml
     steps:
       - uses: actions/checkout@v5
@@ -198,15 +200,22 @@ jobs:
           # (Platform/Sdk already installed above).
           dbus-run-session -- flatpak install -y --noninteractive --user --no-deps ./org.devenv.Neovim.flatpak
 
+      # flatpak-github-actions tries to pull the extension runtime from `repository-name`,
+      # but org.devenv.Neovim is a locally installed app — build with flatpak-builder directly.
       - name: Build Extension
-        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
-        with:
-          bundle: ${{ matrix.extension.name }}.flatpak
-          manifest-path: ${{ matrix.extension.manifest }}
-          cache-key: flatpak-ext-${{ matrix.extension.name }}-${{ github.sha }}
-          repository-name: fedora
-          repository-url: oci+https://registry.fedoraproject.org
-          upload-artifact: false
+        env:
+          EXT_NAME: ${{ matrix.extension.name }}
+          EXT_ID: ${{ matrix.extension.id }}
+          EXT_MANIFEST: ${{ matrix.extension.manifest }}
+        run: |
+          dbus-run-session -- xvfb-run -a flatpak-builder \
+            --user \
+            --force-clean \
+            --install-deps-from=fedora \
+            --repo=ext-repo \
+            "build-${EXT_NAME}" \
+            "${EXT_MANIFEST}"
+          flatpak build-bundle ext-repo "${EXT_NAME}.flatpak" "${EXT_ID}" stable
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
