@@ -34,6 +34,9 @@ modules:
       - cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/app
       - cmake --build build
       - cmake --install build
+      # Extension mount points must exist in the parent app for Flatpak to bind-mount addons
+      - mkdir -p /app/lsp/python /app/lsp/go /app/lsp/bash /app/lsp/rust
+      - mkdir -p /app/tree-sitter/Python
     sources:
       - type: archive
         url: https://src.fedoraproject.org/repo/pkgs/neovim/neovim-0.12.6.tar.gz/sha512/7baf1a6c5e46845b415f522ad17129a3af33c698356f1f7f276481a7f55e3fc994ba1399aac85e1cd1b8436cc59f733ff1fddc12cdb027c295be1abd2dd20448/neovim-0.12.6.tar.gz
