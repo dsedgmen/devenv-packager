@@ -20,18 +20,131 @@ finish-args:
   # Device access
   - --device=dri
 
+build-options:
+  prepend-path: /app/bin
+  prepend-pkg-config-path: /app/lib/pkgconfig
+  append-ld-library-path: /app/lib
+  env:
+    CMAKE_PREFIX_PATH: /app
+    PKG_CONFIG_PATH: /app/lib/pkgconfig
+
 modules:
-  # Fedora f45 neovim Source0 + Source3 treesitter vendor, plus cmake.deps pins
-  # (libuv/luajit/…) as type:file so flatpak-builder fetches them on the host
-  # and the build sandbox stays offline (Fedora Sdk lacks these -devel pkgs).
+  # --- Neovim deps from Fedora f45 lookaside (same blobs as Fedora packages) ---
+  - name: libuv
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DBUILD_TESTING=OFF
+      - -DLIBUV_BUILD_SHARED=ON
+    cleanup:
+      - /share/man
+      - /share/doc
+    sources:
+      - type: archive
+        url: https://src.fedoraproject.org/repo/pkgs/libuv/libuv-v1.52.1.tar.gz/sha512/3dbb61067c03d025fd880afa2015e67d9cd9de2672df2bfb9901a48759f7bd1285a600b4ac4177c1ee0bf8418c7b967fef356f81e37765e33a818df0aabdc1aa/libuv-v1.52.1.tar.gz
+        sha256: 66d511b9e6e334c0e62279eb234fbfb2b3110b1479c09b95b44c7afca8cff9e7
+
+  - name: unibilium
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DBUILD_TOOLS=OFF
+      - -DBUILD_TESTS=OFF
+    cleanup:
+      - /share/man
+    sources:
+      - type: archive
+        url: https://src.fedoraproject.org/repo/pkgs/unibilium/unibilium-2.1.4.tar.gz/sha512/e1d351b7f4c13825c415f3b8078abd538863614a8aa443e3c5e5b85110372084ff4385c4b17eb7a546807188265285ca4b6493b6db9670d490f7743b89f11c4f/unibilium-2.1.4.tar.gz
+        sha256: 7360907bcf79ba49f6fc4a504767ff86e93ab9018477026fcc70d5ab77e1f2c1
+
+  - name: utf8proc
+    buildsystem: simple
+    build-commands:
+      - make -j"${FLATPAK_BUILDER_N_JOBS}" prefix=/app
+      - make install prefix=/app
+    cleanup:
+      - /share
+    sources:
+      - type: archive
+        url: https://src.fedoraproject.org/repo/pkgs/utf8proc/utf8proc-v2.11.3.tar.gz/sha512/148701fce506d076f03497b6d085f1993eff743debad4a2f6d3cbac91e19a5c22d9938245bdb460c1b22b51842c7416c42124db7416c684ee63d622490baac0e/utf8proc-v2.11.3.tar.gz
+        sha256: abfed50b6d4da51345713661370290f4f4747263ee73dc90356299dfc7990c78
+
+  - name: luajit
+    no-autogen: true
+    make-args:
+      - PREFIX=/app
+      - BUILDMODE=dynamic
+    make-install-args:
+      - PREFIX=/app
+    cleanup:
+      - /share/man
+      - /share/luajit-2.1/jit
+    sources:
+      - type: archive
+        url: https://src.fedoraproject.org/repo/pkgs/luajit/LuaJIT-2.1.1767980792.tar.gz/sha512/c14c8c98c1e484cdad8d8408f3863d54addb8af7800ff548608559381d8247eac885bfef00c47274e93f9c17235aa93c3b33f3b4acc4bb1404c1ad848f3ccab6/LuaJIT-2.1.1767980792.tar.gz
+        sha256: 00361a660e4496dc125818ea6881d17e1c45a341e5400edfd531f2ba5ce863d7
+
+  - name: luv
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DBUILD_MODULE=OFF
+      - -DBUILD_SHARED_LIBS=ON
+      - -DWITH_SHARED_LIBUV=ON
+      - -DWITH_LUA_ENGINE=LuaJIT
+      - -DLUA_BUILD_TYPE=System
+    cleanup:
+      - /share
+    sources:
+      - type: archive
+        url: https://src.fedoraproject.org/repo/pkgs/lua-luv/luv-1.53.0.0.tar.gz/sha512/528f8bd306805a804b61766ce25eeba4332859a132a1905ff6122e2750f8f8588c302649dd7d1dbfff09b40778b3b9f19cb19b67d861016be034cbcf36cddf8d/luv-1.53.0.0.tar.gz
+        sha256: bd393b5918f320c79a2c6405e3abebe01c024557c32b9fb9006bee20ce71e19e
+
+  - name: lpeg
+    buildsystem: simple
+    build-commands:
+      - make -j"${FLATPAK_BUILDER_N_JOBS}" LUADIR=/app/include/luajit-2.1
+      - install -Dm755 lpeg.so /app/lib/lua/5.1/lpeg.so
+      - install -Dm644 re.lua /app/share/lua/5.1/re.lua
+    sources:
+      - type: archive
+        url: https://src.fedoraproject.org/repo/pkgs/lua-lpeg/lpeg-1.1.0.tar.gz/sha512/01b2a4ceb2d110e143603bc63c84a59736ea735dd0ed9866286ba115d41be48d09c9ff21c8e2327974d2296944f6508d50a5c3a18f26ac1d81b8b2fc41f61222/lpeg-1.1.0.tar.gz
+        sha256: 4b155d67d2246c1ffa7ad7bc466c1ea899bbc40fef0257cc9c03cecbaed4352a
+
+  - name: tree-sitter
+    buildsystem: simple
+    build-commands:
+      - make -j"${FLATPAK_BUILDER_N_JOBS}" PREFIX=/app
+      - make install PREFIX=/app LIBDIR=/app/lib INCLUDEDIR=/app/include
+    cleanup:
+      - /share
+    sources:
+      - type: archive
+        url: https://src.fedoraproject.org/repo/pkgs/tree-sitter/tree-sitter-0.26.13.tar.gz/sha512/3278ae1f65bc2cf4861f9fec1082089c155a59cc6fb96940cc56630518338327f9069ca144157e4e4d810fd437c45d46db8ce4974c66ffc63672b105b1e6aa72/tree-sitter-0.26.13.tar.gz
+        sha256: ece24c3c5e2a76384075e830c7139b59fce8fb01e4ef8436fab08bbe10444c89
+
+  # Fedora f45 neovim Source0 + Source3 treesitter-parser vendor (offline parsers)
   - name: neovim
     buildsystem: simple
     build-commands:
       - mkdir -p .deps/build
       - ln -sfr neovim-0.12.6-vendor .deps/build/downloads
-      - cmake -S cmake.deps -B .deps -G Ninja -DCMAKE_BUILD_TYPE=Release
+      - >
+        cmake -S cmake.deps -B .deps -G Ninja
+        -DCMAKE_BUILD_TYPE=Release
+        -DUSE_BUNDLED=OFF
+        -DUSE_BUNDLED_TS_PARSERS=ON
       - cmake --build .deps
-      - cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/app
+      - >
+        cmake -S . -B build -G Ninja
+        -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_INSTALL_PREFIX=/app
+        -DCMAKE_PREFIX_PATH=/app
+        -DUSE_BUNDLED=OFF
+        -DPREFER_LUA=OFF
+        -DLUA_PRG=/app/bin/luajit
+        -DENABLE_JEMALLOC=OFF
+        -DLIBLUV_INCLUDE_DIR=/app/include
       - cmake --build build
       - cmake --install build
       # Extension mount points must exist in the parent app for Flatpak to bind-mount addons
@@ -45,48 +158,12 @@ modules:
         url: https://src.fedoraproject.org/repo/pkgs/neovim/neovim-0.12.6-vendor.tar.gz/sha512/65ea5c83822af486312945ff41f57363739e479d9abd14de57ab05e226b73f29728215985dece7cee6f07b79f8cb16cce8745409909b533fa1244e45e5880ec5/neovim-0.12.6-vendor.tar.gz
         sha256: 233fd89d1bdf1ef312259029896a645ef302f13010202ce727cdf240123b28c0
         dest: neovim-0.12.6-vendor
-      # cmake.deps/deps.txt pins (SHA256 must match; fetched outside the build bubble)
-      - type: file
-        url: https://github.com/libuv/libuv/archive/v1.52.1.tar.gz
-        sha256: 478baf2599bfbc882c355288c9cb6f92e0e7dda435fa04031fa5b607cf3f414c
-        dest: neovim-0.12.6-vendor/libuv
-        dest-filename: v1.52.1.tar.gz
-      - type: file
-        url: https://github.com/luajit/luajit/archive/fbb36bb6bfa88716a47c58bcf9ce9f2ef752abac.tar.gz
-        sha256: e60cd2f3057aa39d33d1c895a20087ab54494d9a1ca45aa488ff0378af42df48
-        dest: neovim-0.12.6-vendor/luajit
-        dest-filename: fbb36bb6bfa88716a47c58bcf9ce9f2ef752abac.tar.gz
-      - type: file
-        url: https://github.com/neovim/unibilium/archive/v2.1.2.tar.gz
-        sha256: 370ecb07fbbc20d91d1b350c55f1c806b06bf86797e164081ccc977fc9b3af7a
-        dest: neovim-0.12.6-vendor/unibilium
-        dest-filename: v2.1.2.tar.gz
-      - type: file
-        url: https://github.com/luvit/luv/archive/1.52.1-0.tar.gz
-        sha256: e8b8774b31d24be4fcf2b021b90599ecccc8e476c61efcc59c3c10cab813a885
-        dest: neovim-0.12.6-vendor/luv
-        dest-filename: 1.52.1-0.tar.gz
-      - type: file
-        url: https://github.com/lunarmodules/lua-compat-5.3/archive/v0.13.tar.gz
-        sha256: f5dc30e7b1fda856ee4d392be457642c1f0c259264a9b9bfbcb680302ce88fc2
-        dest: neovim-0.12.6-vendor/lua_compat53
-        dest-filename: v0.13.tar.gz
-      - type: file
-        url: https://github.com/neovim/deps/raw/d495ee6f79e7962a53ad79670cb92488abe0b9b4/opt/lpeg-1.1.0.tar.gz
-        sha256: 4b155d67d2246c1ffa7ad7bc466c1ea899bbc40fef0257cc9c03cecbaed4352a
-        dest: neovim-0.12.6-vendor/lpeg
-        dest-filename: lpeg-1.1.0.tar.gz
-      - type: file
-        url: https://github.com/juliastrings/utf8proc/archive/v2.11.3.tar.gz
-        sha256: abfed50b6d4da51345713661370290f4f4747263ee73dc90356299dfc7990c78
-        dest: neovim-0.12.6-vendor/utf8proc
-        dest-filename: v2.11.3.tar.gz
 
   # Fedora f45 python-lsp-server Source0
   - name: python-lsp-server
     buildsystem: simple
     build-commands:
-      - pip3 install --prefix=/app --no-deps --no-build-isolation .
+      - PYTHONUSERBASE=/app pip3 install --user --no-deps --no-build-isolation .
     sources:
       - type: archive
         url: https://src.fedoraproject.org/repo/pkgs/python-lsp-server/python-lsp-server-1.14.0.tar.gz/sha512/72d6a86887355111a63569a11443f6c3dd910c61ff9084284cb428f6963d0dc03594a05049aca4306f5af609dac7a7db351bb6ff1b499ffbbdf74bec83cce9fa/python-lsp-server-1.14.0.tar.gz

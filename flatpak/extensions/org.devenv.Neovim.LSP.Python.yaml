@@ -1,6 +1,6 @@
 # Flatpak Extension: Python LSP Server
 # Install with: flatpak install org.devenv.Neovim.LSP.Python
-# Sources: Fedora f45 lookaside (SRPM Source0), SHA256-pinned. No cargo/PyPI binary wheels.
+# Sources: Fedora f45 lookaside (lookaside Source0), SHA256-pinned. No cargo/PyPI binary wheels.
 
 id: org.devenv.Neovim.LSP.Python
 branch: stable

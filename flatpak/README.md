@@ -298,12 +298,11 @@ flatpak build-bundle repo org.devenv.Neovim.flatpak org.devenv.Neovim
 flatpak install org.devenv.Neovim.flatpak
 ```
 
-### Fedora lookaside (= SRPM Source0)
+### Fedora lookaside Source0
 
-Modules pin the same tarballs Fedora ships in its source RPMs, fetched from
-`src.fedoraproject.org/repo/pkgs/...` with `sha256:` digests. That is the
-Flatpak-friendly form of “build from Fedora sources” — verified source
-archives, not binary RPMs and not unpinned GitHub/`pip` downloads.
+Modules pin the same Source0 tarballs Fedora packages use, fetched from
+`src.fedoraproject.org/repo/pkgs/...` with `sha256:` digests. Same blobs as
+Fedora packages — not binary RPMs and not unpinned GitHub/`pip` downloads.
 
 ## Extension Architecture
 
@@ -377,7 +376,7 @@ modules:
       - install -Dm755 yourlanguage.so /app/tree-sitter/yourlanguage/yourlanguage.so
     sources:
       - type: archive
-        url: https://github.com/tree-sitter/tree-sitter-yourlanguage/...
+        url: https://src.fedoraproject.org/repo/pkgs/tree-sitter-yourlanguage/...
         sha256: ...
 ```
 
@@ -385,9 +384,8 @@ modules:
 
 Flatpak manifests use:
 - ✅ Runtime/SDK: `org.fedoraproject.Platform` / `Sdk` branch `f45` (see `FEDORA_VERSION`)
-- ✅ Fedora source RPM payloads via lookaside (`src.fedoraproject.org/repo/pkgs`)
-- ✅ Upstream sources where Fedora packages them (same Source0 tarballs)
-- ✅ No binary downloads / no unpinned `git` / no crates.io or PyPI wheels at build time
+- ✅ Fedora lookaside Source0 (`src.fedoraproject.org/repo/pkgs`) — same blobs as Fedora packages
+- ✅ No binary RPM installs / no unpinned `git` / no crates.io or PyPI wheels at build time
 - ✅ All remote archives verified by SHA256
 
 Pins live in `fedora-sources.json`. Weekly CI (`update-fedora-sources.yml`) refreshes

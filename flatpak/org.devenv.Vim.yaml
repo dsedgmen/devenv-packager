@@ -21,7 +21,7 @@ finish-args:
   - --device=dri
 
 modules:
-  # Fedora f45 vim Source0 (lookaside = SRPM payload), not a binary RPM
+  # Fedora f45 vim Source0 (lookaside Source0), not a binary RPM
   - name: vim
     buildsystem: simple
     build-commands:

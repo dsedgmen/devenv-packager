@@ -105,7 +105,8 @@ def select_files(distgit: str, parsed: list[dict], tracked: set[str]) -> list[di
         ]
     if distgit == "python-jedi":
         return [p for p in parsed if p["filename"].startswith("jedi-")]
-    return parsed
+    # Skip detached signatures and other non-source artifacts
+    return [p for p in parsed if not p["filename"].endswith(".sign")]
 
 
 def refresh_packages(data: dict, fedora: int) -> dict:
