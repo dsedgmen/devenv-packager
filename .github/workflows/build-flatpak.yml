@@ -192,8 +192,9 @@ jobs:
           FEDORA: ${{ needs.prepare.outputs.fedora }}
         run: |
           dnf install -y flatpak flatpak-builder ostree dbus-daemon xorg-x11-server-Xvfb
-          flatpak remote-add --if-not-exists fedora oci+https://registry.fedoraproject.org
-          dbus-run-session -- flatpak install -y --noninteractive fedora \
+          # Keep --user consistent with flatpak-builder --user (system remotes are invisible there).
+          flatpak --user remote-add --if-not-exists fedora oci+https://registry.fedoraproject.org
+          dbus-run-session -- flatpak install -y --noninteractive --user fedora \
             "org.fedoraproject.Platform//f${FEDORA}" \
             "org.fedoraproject.Sdk//f${FEDORA}"
           # Parent app defines extension points; --no-deps avoids oci+ flatpakrepo URL errors
