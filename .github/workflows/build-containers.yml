@@ -128,7 +128,9 @@ jobs:
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ steps.img.outputs.ref }}
-          scanners: vuln,secret,misconfig
+          # misconfig scans embedded Dockerfiles from RPM contents (e.g. rust-analyzer);
+          # Containerfile misconfig is covered by Security fs scan.
+          scanners: vuln,secret
           severity: HIGH,CRITICAL
           format: table
           exit-code: "1"

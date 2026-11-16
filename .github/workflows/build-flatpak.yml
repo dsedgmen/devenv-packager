@@ -51,11 +51,18 @@ jobs:
           repository: dsedgmen/devenv-lsp-setup
           path: .deps/devenv-lsp-setup
 
+      - name: Checkout devenv-code-flowchart
+        uses: actions/checkout@v5
+        with:
+          repository: dsedgmen/devenv-code-flowchart
+          path: .deps/devenv-code-flowchart
+
       - name: Stage build context
         env:
           DEVENV_AI_DIR: ${{ github.workspace }}/.deps/devenv-ai-assistant
           DEVENV_AI_HELPER_DIR: ${{ github.workspace }}/.deps/devenv-ai-helper
           DEVENV_LSP_SETUP_DIR: ${{ github.workspace }}/.deps/devenv-lsp-setup
+          DEVENV_CODE_FLOWCHART_DIR: ${{ github.workspace }}/.deps/devenv-code-flowchart
         run: |
           chmod +x scripts/prepare-build-context.sh
           ./scripts/prepare-build-context.sh
