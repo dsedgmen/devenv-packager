@@ -169,6 +169,7 @@ jobs:
       image: registry.fedoraproject.org/fedora:${{ needs.prepare.outputs.fedora }}
       options: --privileged
     strategy:
+      fail-fast: false
       matrix:
         extension:
           - name: python-lsp

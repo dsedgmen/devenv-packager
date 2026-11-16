@@ -6,7 +6,7 @@ id: org.devenv.Neovim.TreeSitter.Python
 branch: stable
 runtime: org.devenv.Neovim
 runtime-version: master
-sdk: org.fedoraproject.Sdk
+sdk: "org.fedoraproject.Sdk//f45"
 build-extension: true
 separate-locales: false
 
