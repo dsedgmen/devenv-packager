@@ -4,8 +4,8 @@
 
 id: org.devenv.Neovim.TreeSitter.Python
 branch: stable
-runtime: org.fedoraproject.Platform
-runtime-version: f45
+runtime: org.devenv.Neovim
+runtime-version: master
 sdk: org.fedoraproject.Sdk
 build-extension: true
 separate-locales: false

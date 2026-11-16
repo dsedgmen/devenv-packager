@@ -45,7 +45,9 @@ echo "════════════════════════�
 echo ""
 
 # Build Neovim
-flatpak-builder --force-clean --repo=repo build-neovim org.devenv.Neovim.yaml
+flatpak-builder --force-clean --repo=repo --install-deps-from=fedora build-neovim org.devenv.Neovim.yaml
+flatpak --user remote-add --if-not-exists --no-gpg-verify devenv-packager-repo repo
+flatpak --user install -y devenv-packager-repo org.devenv.Neovim
 
 echo ""
 echo "✅ Neovim Flatpak built!"

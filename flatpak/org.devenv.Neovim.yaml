@@ -21,7 +21,9 @@ finish-args:
   - --device=dri
 
 modules:
-  # Fedora f45 neovim Source0 + Source3 vendor (bundled treesitter deps; offline)
+  # Fedora f45 neovim Source0 + Source3 treesitter vendor, plus cmake.deps pins
+  # (libuv/luajit/…) as type:file so flatpak-builder fetches them on the host
+  # and the build sandbox stays offline (Fedora Sdk lacks these -devel pkgs).
   - name: neovim
     buildsystem: simple
     build-commands:
@@ -40,6 +42,42 @@ modules:
         url: https://src.fedoraproject.org/repo/pkgs/neovim/neovim-0.12.6-vendor.tar.gz/sha512/65ea5c83822af486312945ff41f57363739e479d9abd14de57ab05e226b73f29728215985dece7cee6f07b79f8cb16cce8745409909b533fa1244e45e5880ec5/neovim-0.12.6-vendor.tar.gz
         sha256: 233fd89d1bdf1ef312259029896a645ef302f13010202ce727cdf240123b28c0
         dest: neovim-0.12.6-vendor
+      # cmake.deps/deps.txt pins (SHA256 must match; fetched outside the build bubble)
+      - type: file
+        url: https://github.com/libuv/libuv/archive/v1.52.1.tar.gz
+        sha256: 478baf2599bfbc882c355288c9cb6f92e0e7dda435fa04031fa5b607cf3f414c
+        dest: neovim-0.12.6-vendor/libuv
+        dest-filename: v1.52.1.tar.gz
+      - type: file
+        url: https://github.com/luajit/luajit/archive/fbb36bb6bfa88716a47c58bcf9ce9f2ef752abac.tar.gz
+        sha256: e60cd2f3057aa39d33d1c895a20087ab54494d9a1ca45aa488ff0378af42df48
+        dest: neovim-0.12.6-vendor/luajit
+        dest-filename: fbb36bb6bfa88716a47c58bcf9ce9f2ef752abac.tar.gz
+      - type: file
+        url: https://github.com/neovim/unibilium/archive/v2.1.2.tar.gz
+        sha256: 370ecb07fbbc20d91d1b350c55f1c806b06bf86797e164081ccc977fc9b3af7a
+        dest: neovim-0.12.6-vendor/unibilium
+        dest-filename: v2.1.2.tar.gz
+      - type: file
+        url: https://github.com/luvit/luv/archive/1.52.1-0.tar.gz
+        sha256: e8b8774b31d24be4fcf2b021b90599ecccc8e476c61efcc59c3c10cab813a885
+        dest: neovim-0.12.6-vendor/luv
+        dest-filename: 1.52.1-0.tar.gz
+      - type: file
+        url: https://github.com/lunarmodules/lua-compat-5.3/archive/v0.13.tar.gz
+        sha256: f5dc30e7b1fda856ee4d392be457642c1f0c259264a9b9bfbcb680302ce88fc2
+        dest: neovim-0.12.6-vendor/lua_compat53
+        dest-filename: v0.13.tar.gz
+      - type: file
+        url: https://github.com/neovim/deps/raw/d495ee6f79e7962a53ad79670cb92488abe0b9b4/opt/lpeg-1.1.0.tar.gz
+        sha256: 4b155d67d2246c1ffa7ad7bc466c1ea899bbc40fef0257cc9c03cecbaed4352a
+        dest: neovim-0.12.6-vendor/lpeg
+        dest-filename: lpeg-1.1.0.tar.gz
+      - type: file
+        url: https://github.com/juliastrings/utf8proc/archive/v2.11.3.tar.gz
+        sha256: abfed50b6d4da51345713661370290f4f4747263ee73dc90356299dfc7990c78
+        dest: neovim-0.12.6-vendor/utf8proc
+        dest-filename: v2.11.3.tar.gz
 
   # Fedora f45 python-lsp-server Source0
   - name: python-lsp-server
@@ -133,27 +171,32 @@ add-extensions:
   # LSP servers as addons
   org.devenv.Neovim.LSP.Python:
     directory: lsp/python
+    version: stable
     no-autodownload: false
     autodelete: false
 
   org.devenv.Neovim.LSP.Go:
     directory: lsp/go
+    version: stable
     no-autodownload: false
     autodelete: false
 
   org.devenv.Neovim.LSP.Bash:
     directory: lsp/bash
+    version: stable
     no-autodownload: false
     autodelete: false
 
   org.devenv.Neovim.LSP.Rust:
     directory: lsp/rust
+    version: stable
     no-autodownload: false
     autodelete: false
 
   # Tree-sitter parsers as addons
   org.devenv.Neovim.TreeSitter:
     directory: tree-sitter
+    version: stable
     subdirectories: true
     no-autodownload: false
     autodelete: false

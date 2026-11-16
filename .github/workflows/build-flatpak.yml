@@ -105,6 +105,7 @@ jobs:
         with:
           bundle: org.devenv.Neovim.flatpak
           manifest-path: flatpak/org.devenv.Neovim.yaml
+          branch: master
           cache-key: flatpak-neovim-${{ github.sha }}
           repository-name: fedora
           repository-url: oci+https://registry.fedoraproject.org
@@ -162,7 +163,7 @@ jobs:
 
   build-extensions:
     name: Build Flatpak Extensions
-    needs: [prepare]
+    needs: [prepare, build-neovim-flatpak]
     runs-on: ubuntu-latest
     container:
       image: registry.fedoraproject.org/fedora:${{ needs.prepare.outputs.fedora }}
@@ -177,7 +178,13 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Install Flatpak tooling + Fedora runtime
+      - name: Download Neovim Flatpak
+        uses: actions/download-artifact@v4
+        with:
+          name: neovim-flatpak
+          path: .
+
+      - name: Install Flatpak tooling + Fedora runtime + Neovim
         env:
           FEDORA: ${{ needs.prepare.outputs.fedora }}
         run: |
@@ -186,6 +193,8 @@ jobs:
           dbus-run-session -- flatpak install -y --noninteractive fedora \
             "org.fedoraproject.Platform//f${FEDORA}" \
             "org.fedoraproject.Sdk//f${FEDORA}"
+          # Parent app defines extension points required by build-extension manifests
+          dbus-run-session -- flatpak install -y --noninteractive --user ./org.devenv.Neovim.flatpak
 
       - name: Build Extension
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6
