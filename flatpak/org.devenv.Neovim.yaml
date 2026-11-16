@@ -85,14 +85,21 @@ modules:
         sha256: 00361a660e4496dc125818ea6881d17e1c45a341e5400edfd531f2ba5ce863d7
 
   - name: luv
-    buildsystem: cmake-ninja
-    config-opts:
-      - -DCMAKE_BUILD_TYPE=Release
-      - -DBUILD_MODULE=OFF
-      - -DBUILD_SHARED_LIBS=ON
-      - -DWITH_SHARED_LIBUV=ON
-      - -DWITH_LUA_ENGINE=LuaJIT
-      - -DLUA_BUILD_TYPE=System
+    # Fedora lookaside Source0; keep deps/lua-compat-5.3 (Fedora uses system lua5.1-compat53)
+    buildsystem: simple
+    build-commands:
+      - >
+        cmake -S . -B build -G Ninja
+        -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_INSTALL_PREFIX=/app
+        -DBUILD_MODULE=OFF
+        -DBUILD_SHARED_LIBS=ON
+        -DWITH_SHARED_LIBUV=ON
+        -DWITH_LUA_ENGINE=LuaJIT
+        -DLUA_BUILD_TYPE=System
+        -DLUA_COMPAT53_DIR=$PWD/deps/lua-compat-5.3
+      - cmake --build build
+      - cmake --install build
     cleanup:
       - /share
     sources:
