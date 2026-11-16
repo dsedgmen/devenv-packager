@@ -17,11 +17,24 @@ modules:
   - name: python-jedi
     buildsystem: simple
     build-commands:
+      # Match Fedora %prep: unpack bundled typeshed + django-stubs into third_party
+      - |
+        pushd jedi/third_party
+        rmdir django-stubs typeshed 2>/dev/null || rm -rf django-stubs typeshed
+        mv ../../django-stubs-fd057010f6cbf176f57d1099e82be46d39b99cb9 django-stubs
+        mv ../../typeshed-4bb9d8351d0795fbc7dee3da069013a48641689d typeshed
+        popd
       - pip3 install --prefix="${FLATPAK_DEST}" --no-deps --no-build-isolation .
     sources:
       - type: archive
         url: https://src.fedoraproject.org/repo/pkgs/python-jedi/jedi-0.20.0.tar.gz/sha512/fef5ed57c005e4b1a87be1b43e8e19b87d103a1b6d4740c179be7b1d36c1a3a3bbc3eb5a6b48ac8cc8c0d9e144170d694ee34ec28193529d673d07caf87be54d/jedi-0.20.0.tar.gz
         sha256: a5fc00c5165862644c0d8265b9899dc3db9782edf5f98fa3a5a18d20c61db701
+      - type: archive
+        url: https://src.fedoraproject.org/repo/pkgs/python-jedi/django-stubs-fd057010f6cbf176f57d1099e82be46d39b99cb9.tar.gz/sha512/506322c132f94e6a1e88cdbde6027a566387731fa6ad59934f95c3511f49d90eff2a3138363811be648b096407d418cd1f801df0bc35b1e464ef181e4076ada1/django-stubs-fd057010f6cbf176f57d1099e82be46d39b99cb9.tar.gz
+        sha256: 8592c169f36840c8b9176a0b33236802a21f5b137b17d69aacd27a98e4c7ef7b
+      - type: archive
+        url: https://src.fedoraproject.org/repo/pkgs/python-jedi/typeshed-4bb9d8351d0795fbc7dee3da069013a48641689d.tar.gz/sha512/676514fabb3a291164372d5db39c70cca452ab124ed151db0e165e426d139df7479f94f171cf24c6df7db3f79abed294f19b1a4a4091f358dc990c0c2d3df0ca/typeshed-4bb9d8351d0795fbc7dee3da069013a48641689d.tar.gz
+        sha256: 80de79f994f84b3aaf2f2768db5ae83f8b717125017f65be706c1b0424593bd9
 
   - name: python-lsp-server
     buildsystem: simple

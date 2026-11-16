@@ -212,6 +212,7 @@ jobs:
           dbus-run-session -- xvfb-run -a flatpak-builder \
             --user \
             --force-clean \
+            --default-branch=stable \
             --install-deps-from=fedora \
             --repo=ext-repo \
             "build-${EXT_NAME}" \
