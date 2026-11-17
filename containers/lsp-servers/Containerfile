@@ -131,7 +131,7 @@ ENTRYPOINT ["vscode-css-language-server", "--stdio"]
 
 FROM base AS lua
 LABEL org.opencontainers.image.title="devenv lsp-lua"
-LABEL org.devenv.lsp.tier="red"
+LABEL org.devenv.lsp.tier="yellow"
 LABEL org.devenv.lsp.id="lua"
 # pin: github:LuaLS/lua-language-server@3.19.2
 ARG LUA_LS_VERSION=3.19.2

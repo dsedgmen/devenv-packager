@@ -121,8 +121,8 @@ languages:
     binary: vscode-css-language-server
 
   - id: lua
-    tier: red
-    ship: false
+    tier: yellow
+    ship: true
     aliases: [lua]
     tree_sitter_pkg: libtree-sitter-lua
     planned_source: github:LuaLS/lua-language-server
