@@ -91,8 +91,8 @@ languages:
     binary: vscode-json-language-server
 
   - id: yaml
-    tier: red
-    ship: false
+    tier: yellow
+    ship: true
     aliases: [yaml]
     tree_sitter_pkg: libtree-sitter-yaml
     planned_source: npm:yaml-language-server
