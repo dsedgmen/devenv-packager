@@ -111,7 +111,7 @@ ENTRYPOINT ["yaml-language-server", "--stdio"]
 
 FROM npm-base AS html
 LABEL org.opencontainers.image.title="devenv lsp-html"
-LABEL org.devenv.lsp.tier="red"
+LABEL org.devenv.lsp.tier="yellow"
 LABEL org.devenv.lsp.id="html"
 # pin: npm:vscode-langservers-extracted@4.10.0
 RUN npm install -g --omit=dev vscode-langservers-extracted@4.10.0 \

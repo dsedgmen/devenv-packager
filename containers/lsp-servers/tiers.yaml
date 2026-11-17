@@ -101,8 +101,8 @@ languages:
     binary: yaml-language-server
 
   - id: html
-    tier: red
-    ship: false
+    tier: yellow
+    ship: true
     aliases: [html]
     tree_sitter_pkg: libtree-sitter-html
     planned_source: npm:vscode-langservers-extracted
