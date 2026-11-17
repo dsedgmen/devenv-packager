@@ -141,8 +141,8 @@ languages:
     binary: jdtls
 
   - id: ruby
-    tier: red
-    ship: false
+    tier: yellow
+    ship: true
     aliases: [ruby]
     tree_sitter_pkg: libtree-sitter-ruby
     planned_source: gem:ruby-lsp
