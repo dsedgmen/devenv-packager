@@ -1,8 +1,30 @@
 name: Build lsp-javascript
 
-# Manual / release rebuild. Shared-path CI is lsp-dispatch.yml (changed ids only).
+# Per-image status badge. Gate skips when this id is unaffected by the diff.
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'containers/lsp-servers/Containerfile'
+      - 'containers/lsp-servers/tiers.yaml'
+      - 'containers/lsp-servers/smoke-lsp.sh'
+      - 'containers/lsp-servers/build.sh'
+      - 'containers/lsp-servers/lang-in-diff.sh'
+      - 'flatpak/FEDORA_VERSION'
+      - '.github/workflows/_reusable-build-lsp.yml'
+      - '.github/workflows/build-lsp-javascript.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'containers/lsp-servers/Containerfile'
+      - 'containers/lsp-servers/tiers.yaml'
+      - 'containers/lsp-servers/smoke-lsp.sh'
+      - 'containers/lsp-servers/build.sh'
+      - 'containers/lsp-servers/lang-in-diff.sh'
+      - 'flatpak/FEDORA_VERSION'
+      - '.github/workflows/_reusable-build-lsp.yml'
+      - '.github/workflows/build-lsp-javascript.yml'
   release:
     types: [published]
   workflow_dispatch:

@@ -1,9 +1,20 @@
 name: Promote lsp-yaml
 
-# Manual promote. On main, lsp-dispatch also promotes changed red ids after build.
+# Status badge + auto promote PR on main when this id changes. Manual: workflow_dispatch.
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'containers/lsp-servers/Containerfile'
+      - 'containers/lsp-servers/tiers.yaml'
+      - 'containers/lsp-servers/promote-check.sh'
+      - 'containers/lsp-servers/smoke-lsp.sh'
+      - 'containers/lsp-servers/apply-promote.sh'
+      - 'containers/lsp-servers/lang-in-diff.sh'
+      - '.github/workflows/_reusable-promote-lsp.yml'
+      - '.github/workflows/promote-lsp-yaml.yml'
 
 jobs:
   promote:

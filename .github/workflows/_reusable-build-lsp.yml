@@ -1,6 +1,7 @@
 # Reusable: build / smoke / Trivy one lsp-<id> image.
 # mode=ship → publish :latest on default branch
 # mode=candidate → publish :candidate only (never :latest)
+# On push/PR, skips quickly when lang-in-diff.sh says this id is unaffected.
 
 name: Reusable build LSP
 
@@ -21,8 +22,49 @@ env:
   IMAGE_PREFIX: ${{ github.repository }}
 
 jobs:
+  gate:
+    name: gate ${{ inputs.id }}
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.check.outputs.run }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Decide whether to build
+        id: check
+        env:
+          ID: ${{ inputs.id }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          chmod +x containers/lsp-servers/lang-in-diff.sh
+          if [ "$EVENT" = "workflow_dispatch" ] || [ "$EVENT" = "release" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "Force run ($EVENT)"
+            exit 0
+          fi
+          if [ "$EVENT" = "pull_request" ]; then
+            BASE="${{ github.event.pull_request.base.sha }}"
+            HEAD="${{ github.event.pull_request.head.sha }}"
+          else
+            BASE="${{ github.event.before }}"
+            HEAD="${{ github.sha }}"
+            if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
+              BASE="origin/main"
+            fi
+          fi
+          if containers/lsp-servers/lang-in-diff.sh "$ID" "$BASE" "$HEAD"; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping unrelated language $ID"
+          fi
+
   build:
     name: lsp-${{ inputs.id }}
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -148,7 +190,6 @@ jobs:
       - name: Smoke LSP (ship)
         if: inputs.mode == 'ship'
         env:
-          # Buildx load puts images in docker; podman cannot see them.
           CONTAINER_RUNTIME: docker
         run: |
           chmod +x containers/lsp-servers/smoke-lsp.sh
