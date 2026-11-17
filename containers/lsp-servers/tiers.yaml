@@ -81,8 +81,8 @@ languages:
     binary: typescript-language-server
 
   - id: json
-    tier: red
-    ship: false
+    tier: yellow
+    ship: true
     aliases: [json]
     tree_sitter_pkg: libtree-sitter-json
     planned_source: npm:vscode-langservers-extracted
