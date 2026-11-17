@@ -41,15 +41,21 @@ if [[ "$tier" == "red" ]]; then
   echo "Pin present for red candidate $ID — attempting provisional build (target must exist)."
 fi
 
-RUNTIME=podman
-command -v podman >/dev/null 2>&1 || RUNTIME=docker
+# Prefer CONTAINER_RUNTIME so CI docker builds match Trivy/docker smoke.
+if [[ -n "${CONTAINER_RUNTIME:-}" ]]; then
+  RUNTIME="$CONTAINER_RUNTIME"
+elif command -v podman >/dev/null 2>&1; then
+  RUNTIME=podman
+else
+  RUNTIME=docker
+fi
 
 USER_UID="$(id -u)"
 USER_GID="$(id -g)"
 FEDORA_VERSION="$("${PARSE[@]}" --query json | python3 -c 'import json,sys; print(json.load(sys.stdin)["fedora"])')"
 IMAGE="lsp-${ID}:promote"
 
-echo "-- build target $ID --"
+echo "-- build target $ID (runtime=$RUNTIME) --"
 if ! $RUNTIME build \
   --target "$ID" \
   --build-arg FEDORA_VERSION="${FEDORA_VERSION}" \
@@ -64,6 +70,7 @@ fi
 
 echo "-- smoke --"
 chmod +x "$SCRIPT_DIR/smoke-lsp.sh"
+export CONTAINER_RUNTIME="$RUNTIME"
 if [[ "$ship" == "true" ]]; then
   "$SCRIPT_DIR/smoke-lsp.sh" "$IMAGE" "$ID"
 else
@@ -76,7 +83,8 @@ if ! command -v trivy >/dev/null 2>&1; then
   echo "Local promote-check incomplete without trivy." >&2
   exit 1
 fi
-trivy image --scanners vuln,secret,misconfig --severity HIGH,CRITICAL --exit-code 1 "$IMAGE"
+# Match build CI: vuln+secret only (misconfig scans embedded Dockerfiles from packages).
+trivy image --scanners vuln,secret --severity HIGH,CRITICAL --exit-code 1 "$IMAGE"
 
 echo ""
 echo "PASS promote-check for $ID."

@@ -18,8 +18,14 @@ fi
 IMAGE="${1:?image required}"
 ID="${2:?language id required}"
 
-RUNTIME=podman
-command -v podman >/dev/null 2>&1 || RUNTIME=docker
+# Prefer CONTAINER_RUNTIME (CI sets docker so Buildx-loaded images are visible).
+if [[ -n "${CONTAINER_RUNTIME:-}" ]]; then
+  RUNTIME="$CONTAINER_RUNTIME"
+elif command -v podman >/dev/null 2>&1; then
+  RUNTIME=podman
+else
+  RUNTIME=docker
+fi
 
 tier="$("${PARSE[@]}" --query tier --id "$ID")"
 ship="$("${PARSE[@]}" --query ship --id "$ID")"

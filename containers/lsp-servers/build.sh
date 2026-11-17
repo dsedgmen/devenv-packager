@@ -16,8 +16,13 @@ USER_GID="$(id -g)"
 FEDORA_VERSION="$("${PARSE[@]}" --query json | python3 -c 'import json,sys; print(json.load(sys.stdin)["fedora"])')"
 WANT="${1:-}"
 
-RUNTIME=podman
-command -v podman >/dev/null 2>&1 || RUNTIME=docker
+if [[ -n "${CONTAINER_RUNTIME:-}" ]]; then
+  RUNTIME="$CONTAINER_RUNTIME"
+elif command -v podman >/dev/null 2>&1; then
+  RUNTIME=podman
+else
+  RUNTIME=docker
+fi
 
 if [[ -z "$WANT" ]]; then
   echo "Usage: $0 <id|all|candidates>" >&2
