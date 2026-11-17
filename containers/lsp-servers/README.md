@@ -33,6 +33,7 @@ Each language has `build-lsp-<id>.yml` (independent status badge). Unaffected la
 | id | Image | Pin source |
 |----|-------|------------|
 | `json` | `lsp-json` | npm `vscode-langservers-extracted` |
+| `yaml` | `lsp-yaml` | npm `yaml-language-server` |
 
 ## Red candidates → yellow promotion
 
@@ -41,7 +42,6 @@ Red languages have pins + Containerfile targets and CI builds `:candidate` image
 | id | Pin source |
 |----|------------|
 | `javascript` / `typescript` | npm `typescript-language-server` + `typescript` |
-| `yaml` | npm `yaml-language-server` |
 | `html` / `css` | npm `vscode-langservers-extracted` |
 | `lua` | GitHub LuaLS release tarball |
 | `java` | Eclipse JDT LS milestone + Fedora JRE |

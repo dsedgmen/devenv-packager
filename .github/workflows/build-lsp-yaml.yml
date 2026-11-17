@@ -34,7 +34,7 @@ jobs:
     uses: ./.github/workflows/_reusable-build-lsp.yml
     with:
       id: yaml
-      mode: candidate
+      mode: ship
     permissions:
       contents: read
       packages: write
