@@ -101,7 +101,7 @@ ENTRYPOINT ["vscode-json-language-server", "--stdio"]
 
 FROM npm-base AS yaml
 LABEL org.opencontainers.image.title="devenv lsp-yaml"
-LABEL org.devenv.lsp.tier="red"
+LABEL org.devenv.lsp.tier="yellow"
 LABEL org.devenv.lsp.id="yaml"
 # pin: npm:yaml-language-server@2.0.0
 RUN npm install -g --omit=dev yaml-language-server@2.0.0 \
