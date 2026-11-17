@@ -1,5 +1,4 @@
-# Reusable: promote-check.sh gate for one language id (red → yellow).
-# Does not edit tiers.yaml; success means the PR may set tier:yellow ship:true.
+# Reusable: promote-check gate, then open a PR that sets tier:yellow ship:true.
 
 name: Reusable promote LSP
 
@@ -30,3 +29,62 @@ jobs:
         run: |
           chmod +x containers/lsp-servers/promote-check.sh
           ./containers/lsp-servers/promote-check.sh "${{ inputs.id }}"
+
+  open-promote-pr:
+    name: Open promote PR ${{ inputs.id }}
+    needs: promote-check
+    # Only from main / manual — never from a PR (avoids nested PRs / loops).
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # Fresh main so the promote PR is based on current default branch.
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Skip if already promoted
+        id: skip
+        run: |
+          tier=$(python3 containers/lsp-servers/parse-tiers.py containers/lsp-servers/tiers.yaml \
+            --query tier --id "${{ inputs.id }}")
+          ship=$(python3 containers/lsp-servers/parse-tiers.py containers/lsp-servers/tiers.yaml \
+            --query ship --id "${{ inputs.id }}")
+          if [ "$tier" = "yellow" ] && [ "$ship" = "true" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Already yellow/ship — no PR."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Apply yellow/ship edits
+        if: steps.skip.outputs.skip != 'true'
+        run: |
+          chmod +x containers/lsp-servers/apply-promote.sh
+          ./containers/lsp-servers/apply-promote.sh "${{ inputs.id }}"
+
+      - name: Create promote pull request
+        if: steps.skip.outputs.skip != 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: promote/${{ inputs.id }}
+          delete-branch: true
+          title: "Promote lsp-${{ inputs.id }} to yellow"
+          commit-message: |
+            Promote lsp-${{ inputs.id }} to yellow after promote-check.
+
+            Sets tier: yellow and ship: true so CI publishes :latest.
+          body: |
+            ## Summary
+            Automated promotion PR for `lsp-${{ inputs.id }}` after `promote-check` passed.
+
+            - `tiers.yaml`: `tier: yellow`, `ship: true`
+            - `Containerfile`: `org.devenv.lsp.tier="yellow"` for this target
+
+            ## Test plan
+            - [ ] Confirm `promote-check` / promote workflow was green for `${{ inputs.id }}`
+            - [ ] Confirm `build-lsp-${{ inputs.id }}` will publish `:latest` after merge
+          labels: promotion

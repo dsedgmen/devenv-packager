@@ -31,7 +31,7 @@ Each image has its own workflow (independent check + badge). Categories from [`c
 | java | red | `lsp-java:candidate` | [![lsp-java](https://github.com/dsedgmen/devenv-packager/actions/workflows/build-lsp-java.yml/badge.svg)](https://github.com/dsedgmen/devenv-packager/actions/workflows/build-lsp-java.yml) | [![promote](https://github.com/dsedgmen/devenv-packager/actions/workflows/promote-lsp-java.yml/badge.svg)](https://github.com/dsedgmen/devenv-packager/actions/workflows/promote-lsp-java.yml) |
 | ruby | red | `lsp-ruby:candidate` | [![lsp-ruby](https://github.com/dsedgmen/devenv-packager/actions/workflows/build-lsp-ruby.yml/badge.svg)](https://github.com/dsedgmen/devenv-packager/actions/workflows/build-lsp-ruby.yml) | [![promote](https://github.com/dsedgmen/devenv-packager/actions/workflows/promote-lsp-ruby.yml/badge.svg)](https://github.com/dsedgmen/devenv-packager/actions/workflows/promote-lsp-ruby.yml) |
 
-Red candidates build and test as `:candidate`. When [promote CI](containers/lsp-servers/README.md) for that id is green, set `tier: yellow` / `ship: true` in the same PR. Details: [containers/lsp-servers/README.md](containers/lsp-servers/README.md).
+Red candidates build and test as `:candidate`. When promote CI for that id is green on `main` (or via workflow_dispatch), it opens a `promote/<id>` PR to set `tier: yellow` / `ship: true`. Merge that PR to publish `:latest`. Details: [containers/lsp-servers/README.md](containers/lsp-servers/README.md).
 
 ## Build
 

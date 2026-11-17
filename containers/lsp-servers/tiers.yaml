@@ -7,8 +7,8 @@
 # Images: ghcr.io/dsedgmen/devenv-packager/lsp-<id>:{latest|candidate,sha,...}
 # Label:  org.devenv.lsp.tier=<green|yellow|red>
 #
-# Promote red → yellow: pass promote-check.sh / promote-lsp-<id> CI, then set
-#   tier: yellow and ship: true in the same PR.
+# Promote red → yellow: pass promote-lsp-<id> CI (promote-check); it opens a PR
+# that sets tier: yellow and ship: true (or run ./apply-promote.sh <id> locally).
 
 fedora: 45
 

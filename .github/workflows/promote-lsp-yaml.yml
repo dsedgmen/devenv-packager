@@ -1,6 +1,7 @@
 name: Promote lsp-yaml
 
-# Gate only: success means the PR may set tier:yellow ship:true for yaml.
+# After promote-check passes (on main or workflow_dispatch), opens a PR that
+# sets tier:yellow ship:true for yaml.
 
 on:
   workflow_dispatch:
@@ -11,6 +12,7 @@ on:
       - 'containers/lsp-servers/tiers.yaml'
       - 'containers/lsp-servers/promote-check.sh'
       - 'containers/lsp-servers/smoke-lsp.sh'
+      - 'containers/lsp-servers/apply-promote.sh'
       - '.github/workflows/_reusable-promote-lsp.yml'
       - '.github/workflows/promote-lsp-yaml.yml'
   pull_request:
@@ -19,6 +21,7 @@ on:
       - 'containers/lsp-servers/tiers.yaml'
       - 'containers/lsp-servers/promote-check.sh'
       - 'containers/lsp-servers/smoke-lsp.sh'
+      - 'containers/lsp-servers/apply-promote.sh'
       - '.github/workflows/_reusable-promote-lsp.yml'
       - '.github/workflows/promote-lsp-yaml.yml'
 
@@ -27,3 +30,6 @@ jobs:
     uses: ./.github/workflows/_reusable-promote-lsp.yml
     with:
       id: yaml
+    permissions:
+      contents: write
+      pull-requests: write

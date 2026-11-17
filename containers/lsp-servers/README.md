@@ -42,8 +42,10 @@ Red languages have pins + Containerfile targets and CI builds `:candidate` image
 | `ruby` | gem `ruby-lsp` |
 
 1. Candidate CI: `build-lsp-<id>.yml` (build + provisional smoke + Trivy).
-2. Promote gate: `./promote-check.sh <id>` or `promote-lsp-<id>.yml`.
-3. In the **same PR**, set `tier: yellow` and `ship: true` (CI then publishes `:latest`).
+2. Promote gate: `./promote-check.sh <id>` or run `promote-lsp-<id>.yml` (Actions → workflow_dispatch, or push to `main` that touches LSP packaging).
+3. When promote-check passes on `main` / dispatch, the workflow opens a PR (`promote/<id>`) that sets `tier: yellow` / `ship: true` and flips the Containerfile tier label. Merge that PR to publish `:latest`.
+
+Local equivalent of step 3: `./apply-promote.sh <id>` then open the PR yourself.
 
 ## Build
 

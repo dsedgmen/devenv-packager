@@ -88,4 +88,4 @@ trivy image --scanners vuln,secret --severity HIGH,CRITICAL --exit-code 1 "$IMAG
 
 echo ""
 echo "PASS promote-check for $ID."
-echo "In the same PR: set tier: yellow, ship: true in tiers.yaml (and keep Containerfile target)."
+echo "Next: promote-lsp-$ID CI opens a PR (or run ./apply-promote.sh $ID locally)."
