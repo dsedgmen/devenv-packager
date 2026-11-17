@@ -121,7 +121,7 @@ ENTRYPOINT ["vscode-html-language-server", "--stdio"]
 
 FROM npm-base AS css
 LABEL org.opencontainers.image.title="devenv lsp-css"
-LABEL org.devenv.lsp.tier="red"
+LABEL org.devenv.lsp.tier="yellow"
 LABEL org.devenv.lsp.id="css"
 # pin: npm:vscode-langservers-extracted@4.10.0
 RUN npm install -g --omit=dev vscode-langservers-extracted@4.10.0 \

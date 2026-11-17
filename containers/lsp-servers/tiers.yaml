@@ -111,8 +111,8 @@ languages:
     binary: vscode-html-language-server
 
   - id: css
-    tier: red
-    ship: false
+    tier: yellow
+    ship: true
     aliases: [css]
     tree_sitter_pkg: libtree-sitter-css
     planned_source: npm:vscode-langservers-extracted
