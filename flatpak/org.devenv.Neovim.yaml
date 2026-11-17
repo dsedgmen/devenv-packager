@@ -85,7 +85,7 @@ modules:
         sha256: 00361a660e4496dc125818ea6881d17e1c45a341e5400edfd531f2ba5ce863d7
 
   - name: luv
-    # Fedora lookaside Source0; keep deps/lua-compat-5.3 (Fedora uses system lua5.1-compat53)
+    # Fedora lookaside Source0 for luv + lua-compat53 (luv tarball has empty submodule dirs)
     buildsystem: simple
     build-commands:
       - >
@@ -106,6 +106,13 @@ modules:
       - type: archive
         url: https://src.fedoraproject.org/repo/pkgs/lua-luv/luv-1.53.0.0.tar.gz/sha512/528f8bd306805a804b61766ce25eeba4332859a132a1905ff6122e2750f8f8588c302649dd7d1dbfff09b40778b3b9f19cb19b67d861016be034cbcf36cddf8d/luv-1.53.0.0.tar.gz
         sha256: bd393b5918f320c79a2c6405e3abebe01c024557c32b9fb9006bee20ce71e19e
+      - type: shell
+        commands:
+          - rm -rf deps/lua-compat-5.3
+      - type: archive
+        url: https://src.fedoraproject.org/repo/pkgs/lua-compat53/lua-compat53-0.7.tar.gz/sha512/665ece98422a105b818cffd96eea5788696fbb854d2ba41d2d387e8bd25c1fa9de601468e55e22e9e749979a66d4d2e0f7dfd656e5bf27b489d37bb07c96f48d/lua-compat53-0.7.tar.gz
+        sha256: bec3a23114a3d9b3218038309657f0f506ad10dfbc03bb54e91da7e5ffdba0a2
+        dest: deps/lua-compat-5.3
 
   - name: lpeg
     buildsystem: simple
