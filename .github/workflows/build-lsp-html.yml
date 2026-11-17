@@ -1,26 +1,8 @@
 name: Build lsp-html
 
+# Manual / release rebuild. Shared-path CI is lsp-dispatch.yml (changed ids only).
+
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'containers/lsp-servers/Containerfile'
-      - 'containers/lsp-servers/tiers.yaml'
-      - 'containers/lsp-servers/smoke-lsp.sh'
-      - 'containers/lsp-servers/build.sh'
-      - 'flatpak/FEDORA_VERSION'
-      - '.github/workflows/_reusable-build-lsp.yml'
-      - '.github/workflows/build-lsp-html.yml'
-  pull_request:
-    branches: [main]
-    paths:
-      - 'containers/lsp-servers/Containerfile'
-      - 'containers/lsp-servers/tiers.yaml'
-      - 'containers/lsp-servers/smoke-lsp.sh'
-      - 'containers/lsp-servers/build.sh'
-      - 'flatpak/FEDORA_VERSION'
-      - '.github/workflows/_reusable-build-lsp.yml'
-      - '.github/workflows/build-lsp-html.yml'
   release:
     types: [published]
   workflow_dispatch:

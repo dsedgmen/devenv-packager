@@ -1,29 +1,9 @@
 name: Promote lsp-typescript
 
-# After promote-check passes (on main or workflow_dispatch), opens a PR that
-# sets tier:yellow ship:true for typescript.
+# Manual promote. On main, lsp-dispatch also promotes changed red ids after build.
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'containers/lsp-servers/Containerfile'
-      - 'containers/lsp-servers/tiers.yaml'
-      - 'containers/lsp-servers/promote-check.sh'
-      - 'containers/lsp-servers/smoke-lsp.sh'
-      - 'containers/lsp-servers/apply-promote.sh'
-      - '.github/workflows/_reusable-promote-lsp.yml'
-      - '.github/workflows/promote-lsp-typescript.yml'
-  pull_request:
-    paths:
-      - 'containers/lsp-servers/Containerfile'
-      - 'containers/lsp-servers/tiers.yaml'
-      - 'containers/lsp-servers/promote-check.sh'
-      - 'containers/lsp-servers/smoke-lsp.sh'
-      - 'containers/lsp-servers/apply-promote.sh'
-      - '.github/workflows/_reusable-promote-lsp.yml'
-      - '.github/workflows/promote-lsp-typescript.yml'
 
 jobs:
   promote:

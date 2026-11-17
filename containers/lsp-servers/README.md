@@ -16,7 +16,7 @@ Host editor ──stdio──► lsp-wrapper.sh ──podman run -i --network=no
 
 Source of truth: [`tiers.yaml`](tiers.yaml). Tags are `latest` / `candidate` / sha / branch — never `:green` or `:yellow`. Category is an OCI label: `org.devenv.lsp.tier`.
 
-Each language has its own GitHub Actions workflow (`build-lsp-<id>.yml`) so one failure does not fail the others.
+Shared changes use `lsp-dispatch.yml` to build only affected languages (`fail-fast: false`). Manual rebuild: `build-lsp-<id>.yml` workflow_dispatch.
 
 ## Shippable now (green)
 
@@ -41,13 +41,13 @@ Red languages have pins + Containerfile targets and CI builds `:candidate` image
 | `java` | Eclipse JDT LS milestone + Fedora JRE |
 | `ruby` | gem `ruby-lsp` |
 
-1. Candidate CI: `build-lsp-<id>.yml` (build + provisional smoke + Trivy).
-2. Promote gate: `./promote-check.sh <id>` or run `promote-lsp-<id>.yml` (Actions → workflow_dispatch, or push to `main` that touches LSP packaging).
-3. When promote-check passes on `main` / dispatch, the workflow opens a PR (`promote/<id>`) that sets `tier: yellow` / `ship: true` and flips the Containerfile tier label. Merge that PR to publish `:latest`.
+1. Candidate CI: `lsp-dispatch.yml` builds only changed red ids (or manual `build-lsp-<id>`).
+2. Promote gate: on `main`, dispatch runs promote for those red ids; or Actions → `promote-lsp-<id>` → Run workflow / `./promote-check.sh <id>`.
+3. When promote-check passes, CI opens `promote/<id>` (`tier: yellow` / `ship: true`). Merge to publish `:latest`.
 
-Repo setting required for step 3 automation: **Settings → Actions → General → Allow GitHub Actions to create and approve pull requests** (and workflow permissions **Read and write**).
+Repo setting for step 3: **Settings → Actions → General → Allow GitHub Actions to create and approve pull requests**.
 
-Local equivalent of step 3: `./apply-promote.sh <id>` then open the PR yourself.
+Local step 3: `./apply-promote.sh <id>` then open the PR yourself.
 
 ## Build
 
