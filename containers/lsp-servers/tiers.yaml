@@ -1,15 +1,14 @@
 # LSP trust categories (NOT image tags).
 #
-# green  — Fedora ships an LSP RPM → package as lsp-<id>
-# yellow — non-RPM LSP promoted after pin + smoke + Trivy → package as lsp-<id>
-# red    — not packaged (default for grammar-only / unpromoted languages)
+# green  — Fedora ships an LSP RPM → package as lsp-<id>:latest
+# yellow — non-RPM LSP promoted after pin + smoke + Trivy → lsp-<id>:latest
+# red    — candidate builds as lsp-<id>:candidate (never :latest until promoted)
 #
-# Images: ghcr.io/dsedgmen/devenv-packager/lsp-<id>:{latest,sha,...}
-# Label:  org.devenv.lsp.tier=<green|yellow>
+# Images: ghcr.io/dsedgmen/devenv-packager/lsp-<id>:{latest|candidate,sha,...}
+# Label:  org.devenv.lsp.tier=<green|yellow|red>
 #
-# Promote red → yellow: fill pin fields, add Containerfile target, pass
-#   ./promote-check.sh <id>
-# then set tier: yellow and ship: true in the same PR.
+# Promote red → yellow: pass promote-check.sh / promote-lsp-<id> CI, then set
+#   tier: yellow and ship: true in the same PR.
 
 fedora: 45
 
@@ -60,16 +59,16 @@ languages:
     command: [clangd]
     binary: clangd
 
-  # --- red until promote-check.sh passes (pin + smoke + Trivy) ---
+  # --- red candidates (pin + Containerfile target; ship after promote-check) ---
   - id: javascript
     tier: red
     ship: false
     aliases: [javascript, js]
     tree_sitter_pkg: libtree-sitter-javascript
     planned_source: npm:typescript-language-server
-    pin: null
-    command: null
-    binary: null
+    pin: npm:typescript-language-server@6.1.0+typescript@5.9.3
+    command: [typescript-language-server, --stdio]
+    binary: typescript-language-server
 
   - id: typescript
     tier: red
@@ -77,9 +76,9 @@ languages:
     aliases: [typescript, ts]
     tree_sitter_pkg: libtree-sitter-typescript
     planned_source: npm:typescript-language-server
-    pin: null
-    command: null
-    binary: null
+    pin: npm:typescript-language-server@6.1.0+typescript@5.9.3
+    command: [typescript-language-server, --stdio]
+    binary: typescript-language-server
 
   - id: json
     tier: red
@@ -87,9 +86,9 @@ languages:
     aliases: [json]
     tree_sitter_pkg: libtree-sitter-json
     planned_source: npm:vscode-langservers-extracted
-    pin: null
-    command: null
-    binary: null
+    pin: npm:vscode-langservers-extracted@4.10.0
+    command: [vscode-json-language-server, --stdio]
+    binary: vscode-json-language-server
 
   - id: yaml
     tier: red
@@ -97,9 +96,9 @@ languages:
     aliases: [yaml]
     tree_sitter_pkg: libtree-sitter-yaml
     planned_source: npm:yaml-language-server
-    pin: null
-    command: null
-    binary: null
+    pin: npm:yaml-language-server@1.19.2
+    command: [yaml-language-server, --stdio]
+    binary: yaml-language-server
 
   - id: html
     tier: red
@@ -107,9 +106,9 @@ languages:
     aliases: [html]
     tree_sitter_pkg: libtree-sitter-html
     planned_source: npm:vscode-langservers-extracted
-    pin: null
-    command: null
-    binary: null
+    pin: npm:vscode-langservers-extracted@4.10.0
+    command: [vscode-html-language-server, --stdio]
+    binary: vscode-html-language-server
 
   - id: css
     tier: red
@@ -117,9 +116,9 @@ languages:
     aliases: [css]
     tree_sitter_pkg: libtree-sitter-css
     planned_source: npm:vscode-langservers-extracted
-    pin: null
-    command: null
-    binary: null
+    pin: npm:vscode-langservers-extracted@4.10.0
+    command: [vscode-css-language-server, --stdio]
+    binary: vscode-css-language-server
 
   - id: lua
     tier: red
@@ -127,9 +126,9 @@ languages:
     aliases: [lua]
     tree_sitter_pkg: libtree-sitter-lua
     planned_source: github:LuaLS/lua-language-server
-    pin: null
-    command: null
-    binary: null
+    pin: github:LuaLS/lua-language-server@3.19.2#sha256:93ad326b10f6c00911dd8c450fa098332dbd8f9f45d1052f5636a2d54479b947
+    command: [lua-language-server]
+    binary: lua-language-server
 
   - id: java
     tier: red
@@ -137,9 +136,9 @@ languages:
     aliases: [java]
     tree_sitter_pkg: libtree-sitter-java
     planned_source: eclipse-jdtls
-    pin: null
-    command: null
-    binary: null
+    pin: eclipse-jdtls@1.63.0#sha256:b1f2abe0b3cccb462cf64fb4a5587c7d09df60cf8be7748b152cbd89d018bdc4
+    command: [jdtls]
+    binary: jdtls
 
   - id: ruby
     tier: red
@@ -147,6 +146,6 @@ languages:
     aliases: [ruby]
     tree_sitter_pkg: libtree-sitter-ruby
     planned_source: gem:ruby-lsp
-    pin: null
-    command: null
-    binary: null
+    pin: gem:ruby-lsp@0.26.11
+    command: [ruby-lsp]
+    binary: ruby-lsp

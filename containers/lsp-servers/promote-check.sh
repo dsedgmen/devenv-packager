@@ -64,17 +64,10 @@ fi
 
 echo "-- smoke --"
 chmod +x "$SCRIPT_DIR/smoke-lsp.sh"
-# Temporarily require binary in image; for red with pin, smoke uses --id lookup.
-# If still red/ship false, smoke-lsp refuses — use provisional ship check via binary in image only.
 if [[ "$ship" == "true" ]]; then
   "$SCRIPT_DIR/smoke-lsp.sh" "$IMAGE" "$ID"
 else
-  # Provisional smoke for promotion PRs: binary + initialize without ship flag
-  if ! $RUNTIME run --rm --network=none --entrypoint bash "$IMAGE" -lc "command -v $binary >/dev/null"; then
-    echo "FAIL: $binary missing in provisional image" >&2
-    exit 1
-  fi
-  echo "OK provisional binary $binary"
+  "$SCRIPT_DIR/smoke-lsp.sh" --provisional "$IMAGE" "$ID"
 fi
 
 echo "-- trivy --"

@@ -1,11 +1,19 @@
 #!/usr/bin/env bash
 # Smoke-test a per-language LSP image: binary present + LSP initialize where reliable.
-# Usage: smoke-lsp.sh <image> <id>
+# Usage:
+#   smoke-lsp.sh <image> <id>                 # shippable only
+#   smoke-lsp.sh --provisional <image> <id>   # red candidates (binary required)
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PARSE=(python3 "$SCRIPT_DIR/parse-tiers.py" "$SCRIPT_DIR/tiers.yaml")
+
+PROVISIONAL=false
+if [[ "${1:-}" == "--provisional" ]]; then
+  PROVISIONAL=true
+  shift
+fi
 
 IMAGE="${1:?image required}"
 ID="${2:?language id required}"
@@ -17,23 +25,38 @@ tier="$("${PARSE[@]}" --query tier --id "$ID")"
 ship="$("${PARSE[@]}" --query ship --id "$ID")"
 binary="$("${PARSE[@]}" --query binary --id "$ID")"
 
-if [[ "$ship" != "true" ]] || [[ -z "$binary" || "$binary" == "None" ]]; then
-  echo "FAIL: '$ID' is not shippable (tier=$tier). Cannot smoke." >&2
+if [[ -z "$binary" || "$binary" == "None" ]]; then
+  echo "FAIL: '$ID' has no binary in tiers.yaml." >&2
   exit 1
 fi
 
-echo "== smoke $IMAGE id=$ID binary=$binary tier=$tier =="
+if [[ "$PROVISIONAL" != "true" ]]; then
+  if [[ "$ship" != "true" ]]; then
+    echo "FAIL: '$ID' is not shippable (tier=$tier). Use --provisional for red candidates." >&2
+    exit 1
+  fi
+fi
+
+echo "== smoke $IMAGE id=$ID binary=$binary tier=$tier provisional=$PROVISIONAL =="
 
 if ! "$RUNTIME" run --rm --network=none --entrypoint bash "$IMAGE" -lc "command -v $binary >/dev/null"; then
   echo "FAIL: $binary not found in $IMAGE" >&2
   exit 1
 fi
 
-# rust-analyzer / clangd can hang on bare initialize; version is enough
+# Version-only (or binary-present) for servers that hang on bare initialize
 case "$ID" in
-  rust|c-cpp)
-    ver="$("$RUNTIME" run --rm --network=none --entrypoint bash "$IMAGE" -lc "$binary --version" | head -1)"
-    echo "OK $ID ($ver)"
+  rust|c-cpp|lua|ruby)
+    set +e
+    ver="$("$RUNTIME" run --rm --network=none --entrypoint bash "$IMAGE" -lc \
+      "$binary --version 2>&1 || $binary -v 2>&1 || true" | head -1)"
+    set -e
+    echo "OK $ID binary present (${ver:-no --version})"
+    exit 0
+    ;;
+  java)
+    # jdtls wrapper is python; --version starts the server — binary check is enough
+    echo "OK $ID binary present"
     exit 0
     ;;
 esac

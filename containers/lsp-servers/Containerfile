@@ -1,6 +1,6 @@
 # One OCI image per LSP (multi-target). Categories live in tiers.yaml — not tags.
-# Build: ./build.sh <id|all>
-# Image: lsp-<id>:latest
+# Build: ./build.sh <id|all|candidates>
+# Shippable: lsp-<id>:latest | Red candidates: lsp-<id>:candidate
 
 ARG FEDORA_VERSION=45
 
@@ -61,14 +61,122 @@ USER lspuser
 ENTRYPOINT ["clangd"]
 
 # ---------------------------------------------------------------------------
-# Yellow targets — add only after promote-check.sh <id> passes (red → yellow).
-# Example stub (do not enable until promoted):
-#
-# FROM base AS typescript
-# LABEL org.devenv.lsp.tier="yellow"
-# LABEL org.devenv.lsp.id="typescript"
-# USER root
-# RUN ... pinned install ...
-# USER lspuser
-# ENTRYPOINT ["typescript-language-server", "--stdio"]
+# Red candidates — pinned non-RPM installs (publish as :candidate until yellow)
+# Pins must match tiers.yaml; bump both together.
 # ---------------------------------------------------------------------------
+
+# Shared npm toolchain for node-based LSPs
+FROM base AS npm-base
+RUN dnf install -y nodejs npm && dnf clean all
+
+FROM npm-base AS javascript
+LABEL org.opencontainers.image.title="devenv lsp-javascript"
+LABEL org.devenv.lsp.tier="red"
+LABEL org.devenv.lsp.id="javascript"
+# pin: npm:typescript-language-server@6.1.0+typescript@5.9.3
+RUN npm install -g --omit=dev typescript-language-server@6.1.0 typescript@5.9.3 \
+    && npm cache clean --force
+USER lspuser
+ENTRYPOINT ["typescript-language-server", "--stdio"]
+
+FROM npm-base AS typescript
+LABEL org.opencontainers.image.title="devenv lsp-typescript"
+LABEL org.devenv.lsp.tier="red"
+LABEL org.devenv.lsp.id="typescript"
+# pin: npm:typescript-language-server@6.1.0+typescript@5.9.3
+RUN npm install -g --omit=dev typescript-language-server@6.1.0 typescript@5.9.3 \
+    && npm cache clean --force
+USER lspuser
+ENTRYPOINT ["typescript-language-server", "--stdio"]
+
+FROM npm-base AS json
+LABEL org.opencontainers.image.title="devenv lsp-json"
+LABEL org.devenv.lsp.tier="red"
+LABEL org.devenv.lsp.id="json"
+# pin: npm:vscode-langservers-extracted@4.10.0
+RUN npm install -g --omit=dev vscode-langservers-extracted@4.10.0 \
+    && npm cache clean --force
+USER lspuser
+ENTRYPOINT ["vscode-json-language-server", "--stdio"]
+
+FROM npm-base AS yaml
+LABEL org.opencontainers.image.title="devenv lsp-yaml"
+LABEL org.devenv.lsp.tier="red"
+LABEL org.devenv.lsp.id="yaml"
+# pin: npm:yaml-language-server@1.19.2
+RUN npm install -g --omit=dev yaml-language-server@1.19.2 \
+    && npm cache clean --force
+USER lspuser
+ENTRYPOINT ["yaml-language-server", "--stdio"]
+
+FROM npm-base AS html
+LABEL org.opencontainers.image.title="devenv lsp-html"
+LABEL org.devenv.lsp.tier="red"
+LABEL org.devenv.lsp.id="html"
+# pin: npm:vscode-langservers-extracted@4.10.0
+RUN npm install -g --omit=dev vscode-langservers-extracted@4.10.0 \
+    && npm cache clean --force
+USER lspuser
+ENTRYPOINT ["vscode-html-language-server", "--stdio"]
+
+FROM npm-base AS css
+LABEL org.opencontainers.image.title="devenv lsp-css"
+LABEL org.devenv.lsp.tier="red"
+LABEL org.devenv.lsp.id="css"
+# pin: npm:vscode-langservers-extracted@4.10.0
+RUN npm install -g --omit=dev vscode-langservers-extracted@4.10.0 \
+    && npm cache clean --force
+USER lspuser
+ENTRYPOINT ["vscode-css-language-server", "--stdio"]
+
+FROM base AS lua
+LABEL org.opencontainers.image.title="devenv lsp-lua"
+LABEL org.devenv.lsp.tier="red"
+LABEL org.devenv.lsp.id="lua"
+# pin: github:LuaLS/lua-language-server@3.19.2
+ARG LUA_LS_VERSION=3.19.2
+ARG LUA_LS_SHA256=93ad326b10f6c00911dd8c450fa098332dbd8f9f45d1052f5636a2d54479b947
+RUN dnf install -y curl ca-certificates tar gzip \
+    && curl -fsSL \
+      "https://github.com/LuaLS/lua-language-server/releases/download/${LUA_LS_VERSION}/lua-language-server-${LUA_LS_VERSION}-linux-x64.tar.gz" \
+      -o /tmp/luals.tar.gz \
+    && echo "${LUA_LS_SHA256}  /tmp/luals.tar.gz" | sha256sum -c - \
+    && mkdir -p /opt/lua-language-server \
+    && tar --no-same-owner -xzf /tmp/luals.tar.gz -C /opt/lua-language-server \
+    && ln -sf /opt/lua-language-server/bin/lua-language-server /usr/local/bin/lua-language-server \
+    && rm -f /tmp/luals.tar.gz \
+    && dnf clean all
+USER lspuser
+ENTRYPOINT ["lua-language-server"]
+
+FROM base AS java
+LABEL org.opencontainers.image.title="devenv lsp-java"
+LABEL org.devenv.lsp.tier="red"
+LABEL org.devenv.lsp.id="java"
+# pin: eclipse-jdtls@1.63.0
+ARG JDTLS_VERSION=1.63.0
+ARG JDTLS_BUILD=202610191322
+ARG JDTLS_SHA256=b1f2abe0b3cccb462cf64fb4a5587c7d09df60cf8be7748b152cbd89d018bdc4
+RUN dnf install -y java-25-openjdk-headless python3 curl ca-certificates tar gzip \
+    && curl -fsSL \
+      "https://download.eclipse.org/jdtls/milestones/${JDTLS_VERSION}/jdt-language-server-${JDTLS_VERSION}-${JDTLS_BUILD}.tar.gz" \
+      -o /tmp/jdtls.tar.gz \
+    && echo "${JDTLS_SHA256}  /tmp/jdtls.tar.gz" | sha256sum -c - \
+    && mkdir -p /opt/jdtls \
+    && tar --no-same-owner -xzf /tmp/jdtls.tar.gz -C /opt/jdtls \
+    && ln -sf /opt/jdtls/bin/jdtls /usr/local/bin/jdtls \
+    && rm -f /tmp/jdtls.tar.gz \
+    && dnf clean all
+USER lspuser
+ENTRYPOINT ["jdtls"]
+
+FROM base AS ruby
+LABEL org.opencontainers.image.title="devenv lsp-ruby"
+LABEL org.devenv.lsp.tier="red"
+LABEL org.devenv.lsp.id="ruby"
+# pin: gem:ruby-lsp@0.26.11
+RUN dnf install -y ruby ruby-devel gcc make redhat-rpm-config \
+    && gem install --no-document ruby-lsp -v 0.26.11 \
+    && dnf clean all
+USER lspuser
+ENTRYPOINT ["ruby-lsp"]

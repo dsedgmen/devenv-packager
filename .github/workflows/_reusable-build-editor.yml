@@ -1,0 +1,104 @@
+# Reusable: build / smoke one editor image (vim | neovim).
+
+name: Reusable build editor
+
+on:
+  workflow_call:
+    inputs:
+      editor:
+        description: vim or neovim
+        required: true
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository }}
+
+jobs:
+  build:
+    name: Build ${{ inputs.editor }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Read Fedora version
+        id: ver
+        run: echo "fedora=$(tr -d '[:space:]' < flatpak/FEDORA_VERSION)" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ inputs.editor }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./containers/${{ inputs.editor }}
+          file: ./containers/${{ inputs.editor }}/Containerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          load: ${{ github.event_name == 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ inputs.editor }}
+          cache-to: type=gha,mode=max,scope=${{ inputs.editor }}
+          build-args: |
+            FEDORA_VERSION=${{ steps.ver.outputs.fedora }}
+            USER_UID=1000
+            USER_GID=1000
+            USERNAME=vimuser
+
+      - name: Resolve image ref
+        id: img
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            first="$(echo "${{ steps.meta.outputs.tags }}" | awk 'NF { print; exit }')"
+            echo "ref=$first" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "ref=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ inputs.editor }}:latest" >> "$GITHUB_OUTPUT"
+            docker pull "${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ inputs.editor }}:latest" \
+              || docker pull "$(echo "${{ steps.meta.outputs.tags }}" | awk 'NF { print; exit }')"
+          else
+            first="$(echo "${{ steps.meta.outputs.tags }}" | awk 'NF { print; exit }')"
+            echo "ref=$first" >> "$GITHUB_OUTPUT"
+            docker pull "$first" || true
+          fi
+
+      - name: Smoke Vim
+        if: inputs.editor == 'vim'
+        run: |
+          docker run --rm --entrypoint bash "${{ steps.img.outputs.ref }}" -lc \
+            'command -v vim && command -v devenv-ai-helper && test -f /usr/share/devenv-ai-assistant/vimrc && test -f /etc/vimrc.devenv'
+          docker run --rm "${{ steps.img.outputs.ref }}" --version | head -3
+          docker run --rm --entrypoint bash "${{ steps.img.outputs.ref }}" -lc \
+            'rpm -q devenv-ai-assistant devenv-ai-helper devenv-lsp-setup'
+
+      - name: Smoke Neovim
+        if: inputs.editor == 'neovim'
+        run: |
+          docker run --rm --entrypoint bash "${{ steps.img.outputs.ref }}" -lc \
+            'command -v nvim && command -v devenv-ai-helper && test -f /usr/share/devenv-ai-assistant/nvim-init.lua && test -f /usr/share/devenv-lsp-setup/lsp-config.lua'
+          docker run --rm "${{ steps.img.outputs.ref }}" --version | head -3
+          docker run --rm --entrypoint bash "${{ steps.img.outputs.ref }}" -lc \
+            'rpm -q devenv-ai-assistant devenv-ai-helper devenv-lsp-setup'

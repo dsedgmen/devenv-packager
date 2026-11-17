@@ -1,0 +1,34 @@
+# Reusable: promote-check.sh gate for one language id (red → yellow).
+# Does not edit tiers.yaml; success means the PR may set tier:yellow ship:true.
+
+name: Reusable promote LSP
+
+on:
+  workflow_call:
+    inputs:
+      id:
+        description: Language id from tiers.yaml
+        required: true
+        type: string
+
+jobs:
+  promote-check:
+    name: promote-check ${{ inputs.id }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Trivy
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
+            | sh -s -- -b /usr/local/bin
+
+      - name: Install podman
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y podman
+
+      - name: Run promote-check
+        run: |
+          chmod +x containers/lsp-servers/promote-check.sh
+          ./containers/lsp-servers/promote-check.sh "${{ inputs.id }}"
