@@ -116,17 +116,21 @@ jobs:
           commit-message: |
             Promote lsp-${{ inputs.id }} to yellow after promote-check.
 
-            Sets tier: yellow and ship: true so CI publishes :latest.
+            Sets tier: yellow and ship: true, switches build mode to ship,
+            and refreshes README status tables for :latest.
           body: |
             ## Summary
             Automated promotion PR for `lsp-${{ inputs.id }}` after `promote-check` passed.
 
             - `tiers.yaml`: `tier: yellow`, `ship: true`
             - `Containerfile`: `org.devenv.lsp.tier="yellow"` for this target
+            - `build-lsp-${{ inputs.id }}.yml`: `mode: ship` (publishes `:latest`)
+            - README status tables: category yellow, `lsp-${{ inputs.id }}:latest`, Promote —
 
             ## Test plan
             - [ ] Confirm `promote-check` was green for `${{ inputs.id }}`
-            - [ ] Confirm `build-lsp-${{ inputs.id }}` will publish `:latest` after merge
+            - [ ] Confirm `build-lsp-${{ inputs.id }}` uses `mode: ship` and publishes `:latest` after merge
+            - [ ] Confirm root README LSP CI row shows yellow / `:latest`
           labels: promotion
 
       - name: Fallback compare link if PR create blocked

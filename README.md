@@ -23,7 +23,7 @@ Per-image workflow badges (status only). Unaffected languages skip the heavy bui
 | c-cpp | green | `lsp-c-cpp:latest` | ![lsp-c-cpp](https://github.com/dsedgmen/devenv-packager/actions/workflows/build-lsp-c-cpp.yml/badge.svg) | — |
 | javascript | red | `lsp-javascript:candidate` | ![lsp-javascript](https://github.com/dsedgmen/devenv-packager/actions/workflows/build-lsp-javascript.yml/badge.svg) | ![promote-javascript](https://github.com/dsedgmen/devenv-packager/actions/workflows/promote-lsp-javascript.yml/badge.svg) |
 | typescript | red | `lsp-typescript:candidate` | ![lsp-typescript](https://github.com/dsedgmen/devenv-packager/actions/workflows/build-lsp-typescript.yml/badge.svg) | ![promote-typescript](https://github.com/dsedgmen/devenv-packager/actions/workflows/promote-lsp-typescript.yml/badge.svg) |
-| json | red | `lsp-json:candidate` | ![lsp-json](https://github.com/dsedgmen/devenv-packager/actions/workflows/build-lsp-json.yml/badge.svg) | ![promote-json](https://github.com/dsedgmen/devenv-packager/actions/workflows/promote-lsp-json.yml/badge.svg) |
+| json | yellow | `lsp-json:latest` | ![lsp-json](https://github.com/dsedgmen/devenv-packager/actions/workflows/build-lsp-json.yml/badge.svg) | — |
 | yaml | red | `lsp-yaml:candidate` | ![lsp-yaml](https://github.com/dsedgmen/devenv-packager/actions/workflows/build-lsp-yaml.yml/badge.svg) | ![promote-yaml](https://github.com/dsedgmen/devenv-packager/actions/workflows/promote-lsp-yaml.yml/badge.svg) |
 | html | red | `lsp-html:candidate` | ![lsp-html](https://github.com/dsedgmen/devenv-packager/actions/workflows/build-lsp-html.yml/badge.svg) | ![promote-html](https://github.com/dsedgmen/devenv-packager/actions/workflows/promote-lsp-html.yml/badge.svg) |
 | css | red | `lsp-css:candidate` | ![lsp-css](https://github.com/dsedgmen/devenv-packager/actions/workflows/build-lsp-css.yml/badge.svg) | ![promote-css](https://github.com/dsedgmen/devenv-packager/actions/workflows/promote-lsp-css.yml/badge.svg) |
@@ -31,7 +31,7 @@ Per-image workflow badges (status only). Unaffected languages skip the heavy bui
 | java | red | `lsp-java:candidate` | ![lsp-java](https://github.com/dsedgmen/devenv-packager/actions/workflows/build-lsp-java.yml/badge.svg) | ![promote-java](https://github.com/dsedgmen/devenv-packager/actions/workflows/promote-lsp-java.yml/badge.svg) |
 | ruby | red | `lsp-ruby:candidate` | ![lsp-ruby](https://github.com/dsedgmen/devenv-packager/actions/workflows/build-lsp-ruby.yml/badge.svg) | ![promote-ruby](https://github.com/dsedgmen/devenv-packager/actions/workflows/promote-lsp-ruby.yml/badge.svg) |
 
-Red candidates build as `:candidate`. On `main`, promote CI for a changed red id opens a `promote/<id>` PR (`tier: yellow` / `ship: true`). Merge that PR to publish `:latest`.
+Red candidates build as `:candidate`. On `main`, promote CI for a changed red id opens a `promote/<id>` PR (`tier: yellow` / `ship: true`, build `mode: ship`, README status). Merge that PR to publish `:latest`.
 
 ## Build
 

@@ -12,7 +12,7 @@ Owns `containers/{vim,neovim,lsp-servers}/` and `flatpak/` (`org.devenv.*`).
 - Categories in `containers/lsp-servers/tiers.yaml`: **green** / **yellow** / **red** (not OCI tags).
 - Host editors → `lsp-wrapper.sh` → `lsp-<id>:latest` over stdio (shippable only).
 - One CI workflow per image (`build-lsp-<id>.yml`, `build-vim.yml`, `build-neovim.yml`) for independent status; `lang-in-diff` skips unaffected LSP builds.
-- Red languages build as `:candidate` (never `:latest`); `promote-lsp-<id>.yml` runs promote-check then opens a PR to set `tier: yellow` / `ship: true`. Manual dispatch: see `containers/lsp-servers/README.md`.
+- Red languages build as `:candidate` (never `:latest`); `promote-lsp-<id>.yml` runs promote-check then opens a PR via `apply-promote.sh` (`tier: yellow` / `ship: true`, `build-lsp-<id>` `mode: ship`, README status). Manual dispatch: see `containers/lsp-servers/README.md`.
 
 ## Editor containers (vim / neovim)
 

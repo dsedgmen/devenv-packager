@@ -28,6 +28,12 @@ Each language has `build-lsp-<id>.yml` (independent status badge). Unaffected la
 | `rust` | `lsp-rust` | `rust-analyzer` |
 | `c-cpp` | `lsp-c-cpp` | `clang-tools-extra` (`clangd`) |
 
+## Yellow (promoted non-RPM)
+
+| id | Image | Pin source |
+|----|-------|------------|
+| `json` | `lsp-json` | npm `vscode-langservers-extracted` |
+
 ## Red candidates → yellow promotion
 
 Red languages have pins + Containerfile targets and CI builds `:candidate` images. Host editors still use `:latest` only for shippable languages.
@@ -35,8 +41,8 @@ Red languages have pins + Containerfile targets and CI builds `:candidate` image
 | id | Pin source |
 |----|------------|
 | `javascript` / `typescript` | npm `typescript-language-server` + `typescript` |
-| `json` / `html` / `css` | npm `vscode-langservers-extracted` |
 | `yaml` | npm `yaml-language-server` |
+| `html` / `css` | npm `vscode-langservers-extracted` |
 | `lua` | GitHub LuaLS release tarball |
 | `java` | Eclipse JDT LS milestone + Fedora JRE |
 | `ruby` | gem `ruby-lsp` |
@@ -47,7 +53,8 @@ Red languages have pins + Containerfile targets and CI builds `:candidate` image
 
 Repo setting for step 3: **Settings → Actions → General → Allow GitHub Actions to create and approve pull requests**.
 
-Local step 3: `./apply-promote.sh <id>` then open the PR yourself.
+Local step 3: `./apply-promote.sh <id>` then open the PR yourself. That script also flips
+`build-lsp-<id>.yml` to `mode: ship` and refreshes README status tables.
 
 ## Build
 

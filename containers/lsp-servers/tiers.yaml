@@ -8,7 +8,7 @@
 # Label:  org.devenv.lsp.tier=<green|yellow|red>
 #
 # Promote red → yellow: pass promote-lsp-<id> CI (promote-check); it opens a PR
-# that sets tier: yellow and ship: true (or run ./apply-promote.sh <id> locally).
+# via apply-promote.sh (tier/ship, Containerfile label, build mode ship, README status).
 
 fedora: 45
 
