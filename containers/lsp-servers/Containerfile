@@ -91,7 +91,7 @@ ENTRYPOINT ["typescript-language-server", "--stdio"]
 
 FROM npm-base AS json
 LABEL org.opencontainers.image.title="devenv lsp-json"
-LABEL org.devenv.lsp.tier="red"
+LABEL org.devenv.lsp.tier="yellow"
 LABEL org.devenv.lsp.id="json"
 # pin: npm:vscode-langservers-extracted@4.10.0
 RUN npm install -g --omit=dev vscode-langservers-extracted@4.10.0 \
