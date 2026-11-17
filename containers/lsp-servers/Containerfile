@@ -172,7 +172,7 @@ ENTRYPOINT ["jdtls"]
 
 FROM base AS ruby
 LABEL org.opencontainers.image.title="devenv lsp-ruby"
-LABEL org.devenv.lsp.tier="red"
+LABEL org.devenv.lsp.tier="yellow"
 LABEL org.devenv.lsp.id="ruby"
 # pin: gem:ruby-lsp@0.26.11
 RUN dnf install -y ruby ruby-devel gcc make redhat-rpm-config \
