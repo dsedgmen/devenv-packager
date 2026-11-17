@@ -147,12 +147,17 @@ jobs:
 
       - name: Smoke LSP (ship)
         if: inputs.mode == 'ship'
+        env:
+          # Buildx load puts images in docker; podman cannot see them.
+          CONTAINER_RUNTIME: docker
         run: |
           chmod +x containers/lsp-servers/smoke-lsp.sh
           ./containers/lsp-servers/smoke-lsp.sh "${{ steps.img.outputs.ref }}" "${{ inputs.id }}"
 
       - name: Smoke LSP (candidate / provisional)
         if: inputs.mode == 'candidate'
+        env:
+          CONTAINER_RUNTIME: docker
         run: |
           chmod +x containers/lsp-servers/smoke-lsp.sh
           ./containers/lsp-servers/smoke-lsp.sh --provisional "${{ steps.img.outputs.ref }}" "${{ inputs.id }}"
