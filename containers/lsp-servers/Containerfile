@@ -71,7 +71,7 @@ RUN dnf install -y nodejs npm && dnf clean all
 
 FROM npm-base AS javascript
 LABEL org.opencontainers.image.title="devenv lsp-javascript"
-LABEL org.devenv.lsp.tier="red"
+LABEL org.devenv.lsp.tier="yellow"
 LABEL org.devenv.lsp.id="javascript"
 # pin: npm:typescript-language-server@6.1.0+typescript@5.9.3
 RUN npm install -g --omit=dev typescript-language-server@6.1.0 typescript@5.9.3 \

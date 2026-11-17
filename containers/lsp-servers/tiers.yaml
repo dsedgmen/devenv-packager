@@ -61,8 +61,8 @@ languages:
 
   # --- red candidates (pin + Containerfile target; ship after promote-check) ---
   - id: javascript
-    tier: red
-    ship: false
+    tier: yellow
+    ship: true
     aliases: [javascript, js]
     tree_sitter_pkg: libtree-sitter-javascript
     planned_source: npm:typescript-language-server
