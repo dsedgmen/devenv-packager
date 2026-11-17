@@ -71,8 +71,8 @@ languages:
     binary: typescript-language-server
 
   - id: typescript
-    tier: red
-    ship: false
+    tier: yellow
+    ship: true
     aliases: [typescript, ts]
     tree_sitter_pkg: libtree-sitter-typescript
     planned_source: npm:typescript-language-server
