@@ -8,13 +8,15 @@ Host editor ──stdio──► lsp-wrapper.sh ──podman run -i --network=no
 
 ## Categories (not tags)
 
-| Category | Meaning | Image |
-|----------|---------|-------|
-| **green** | Fedora LSP RPM | `ghcr.io/dsedgmen/devenv-packager/lsp-<id>` |
-| **yellow** | Non-RPM LSP after pin + smoke + Trivy | same naming |
-| **red** | Not packaged | — |
+| Category | Meaning | Image tag |
+|----------|---------|-----------|
+| **green** | Fedora LSP RPM | `lsp-<id>:latest` |
+| **yellow** | Non-RPM LSP after promote-check | `lsp-<id>:latest` |
+| **red** | Pinned candidate (not shipped) | `lsp-<id>:candidate` only |
 
-Source of truth: [`tiers.yaml`](tiers.yaml). Image tags are `latest` / sha / branch — never `:green` or `:yellow`. Category is an OCI label: `org.devenv.lsp.tier`.
+Source of truth: [`tiers.yaml`](tiers.yaml). Tags are `latest` / `candidate` / sha / branch — never `:green` or `:yellow`. Category is an OCI label: `org.devenv.lsp.tier`.
+
+Each language has its own GitHub Actions workflow (`build-lsp-<id>.yml`) so one failure does not fail the others.
 
 ## Shippable now (green)
 
@@ -26,24 +28,33 @@ Source of truth: [`tiers.yaml`](tiers.yaml). Image tags are `latest` / sha / bra
 | `rust` | `lsp-rust` | `rust-analyzer` |
 | `c-cpp` | `lsp-c-cpp` | `clang-tools-extra` (`clangd`) |
 
-## Red → yellow promotion
+## Red candidates → yellow promotion
 
-Grammar-only / non-RPM languages start **red** (`javascript`, `typescript`, `json`, `yaml`, `html`, `css`, `lua`, `java`, `ruby`).
+Red languages have pins + Containerfile targets and CI builds `:candidate` images. Host editors still use `:latest` only for shippable languages.
 
-1. Add a **pin** (version/url/checksum) and `binary` / `command` in `tiers.yaml`.
-2. Add a Containerfile target `AS <id>` with the pinned install.
-3. Run `./promote-check.sh <id>` (build + smoke + Trivy) — also [`promote-lsp.yml`](../../.github/workflows/promote-lsp.yml).
-4. In the **same PR**, set `tier: yellow` and `ship: true`.
+| id | Pin source |
+|----|------------|
+| `javascript` / `typescript` | npm `typescript-language-server` + `typescript` |
+| `json` / `html` / `css` | npm `vscode-langservers-extracted` |
+| `yaml` | npm `yaml-language-server` |
+| `lua` | GitHub LuaLS release tarball |
+| `java` | Eclipse JDT LS milestone + Fedora JRE |
+| `ruby` | gem `ruby-lsp` |
 
-Until that passes, `build.sh` refuses the id and no image is published.
+1. Candidate CI: `build-lsp-<id>.yml` (build + provisional smoke + Trivy).
+2. Promote gate: `./promote-check.sh <id>` or `promote-lsp-<id>.yml`.
+3. In the **same PR**, set `tier: yellow` and `ship: true` (CI then publishes `:latest`).
 
 ## Build
 
 ```bash
 ./build.sh python          # → lsp-python:latest
+./build.sh javascript      # → lsp-javascript:candidate
 ./build.sh all             # all shippable (green + yellow)
+./build.sh candidates      # all red → :candidate
 ./smoke-lsp.sh lsp-python:latest python
-./promote-check.sh lua     # fails until pin + target exist
+./smoke-lsp.sh --provisional lsp-javascript:candidate javascript
+./promote-check.sh lua
 ```
 
 Fedora version: `flatpak/FEDORA_VERSION`.

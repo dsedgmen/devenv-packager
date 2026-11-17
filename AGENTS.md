@@ -10,8 +10,9 @@ Owns `containers/{vim,neovim,lsp-servers}/` and `flatpak/` (`org.devenv.*`).
 **One image per language:** `ghcr.io/dsedgmen/devenv-packager/lsp-<id>`.
 
 - Categories in `containers/lsp-servers/tiers.yaml`: **green** / **yellow** / **red** (not OCI tags).
-- Host editors → `lsp-wrapper.sh` → `lsp-<id>:latest` over stdio.
-- Red languages are not built; promote with `promote-check.sh` (pin + smoke + Trivy) then set `tier: yellow` / `ship: true`.
+- Host editors → `lsp-wrapper.sh` → `lsp-<id>:latest` over stdio (shippable only).
+- One CI workflow per image (`build-lsp-<id>.yml`, `build-vim.yml`, `build-neovim.yml`) for independent status.
+- Red languages build as `:candidate` (never `:latest`); promote with `promote-check.sh` / `promote-lsp-<id>.yml` then set `tier: yellow` / `ship: true`.
 
 ## Editor containers (vim / neovim)
 
@@ -37,6 +38,7 @@ App IDs: `org.devenv.Neovim`, `org.devenv.Vim` (and matching extensions).
 ## Verify
 
 - `./containers/lsp-servers/build.sh all`
+- `./containers/lsp-servers/build.sh candidates`
 - `./containers/lsp-servers/smoke-lsp.sh lsp-python:latest python`
 - `./containers/neovim/build.sh`
 - `./containers/vim/build.sh`

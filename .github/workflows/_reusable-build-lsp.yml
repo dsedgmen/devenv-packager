@@ -1,0 +1,167 @@
+# Reusable: build / smoke / Trivy one lsp-<id> image.
+# mode=ship → publish :latest on default branch
+# mode=candidate → publish :candidate only (never :latest)
+
+name: Reusable build LSP
+
+on:
+  workflow_call:
+    inputs:
+      id:
+        description: Language id (Containerfile target)
+        required: true
+        type: string
+      mode:
+        description: ship (green/yellow) or candidate (red)
+        required: true
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository }}
+
+jobs:
+  build:
+    name: lsp-${{ inputs.id }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Read Fedora version
+        id: ver
+        run: echo "fedora=$(tr -d '[:space:]' < flatpak/FEDORA_VERSION)" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (ship)
+        if: inputs.mode == 'ship'
+        id: meta-ship
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/lsp-${{ inputs.id }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+          labels: |
+            org.devenv.lsp.id=${{ inputs.id }}
+
+      - name: Extract metadata (candidate)
+        if: inputs.mode == 'candidate'
+        id: meta-cand
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/lsp-${{ inputs.id }}
+          tags: |
+            type=raw,value=candidate,enable={{is_default_branch}}
+            type=sha
+            type=ref,event=branch
+            type=ref,event=pr
+          labels: |
+            org.devenv.lsp.id=${{ inputs.id }}
+
+      - name: Select metadata outputs
+        id: meta
+        env:
+          MODE: ${{ inputs.mode }}
+          SHIP_TAGS: ${{ steps.meta-ship.outputs.tags }}
+          SHIP_LABELS: ${{ steps.meta-ship.outputs.labels }}
+          CAND_TAGS: ${{ steps.meta-cand.outputs.tags }}
+          CAND_LABELS: ${{ steps.meta-cand.outputs.labels }}
+        run: |
+          if [ "$MODE" = "ship" ]; then
+            {
+              echo "tags<<EOF"
+              echo "$SHIP_TAGS"
+              echo "EOF"
+              echo "labels<<EOF"
+              echo "$SHIP_LABELS"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+          else
+            {
+              echo "tags<<EOF"
+              echo "$CAND_TAGS"
+              echo "EOF"
+              echo "labels<<EOF"
+              echo "$CAND_LABELS"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build and push
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: ./containers/lsp-servers
+          file: ./containers/lsp-servers/Containerfile
+          target: ${{ inputs.id }}
+          push: ${{ github.event_name != 'pull_request' }}
+          load: ${{ github.event_name == 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=lsp-${{ inputs.id }}
+          cache-to: type=gha,mode=max,scope=lsp-${{ inputs.id }}
+          build-args: |
+            FEDORA_VERSION=${{ steps.ver.outputs.fedora }}
+            USER_UID=1000
+            USER_GID=1000
+
+      - name: Resolve image ref for smoke/scan
+        id: img
+        env:
+          MODE: ${{ inputs.mode }}
+          ID: ${{ inputs.id }}
+          TAGS: ${{ steps.meta.outputs.tags }}
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            first="$(echo "$TAGS" | awk 'NF { print; exit }')"
+            docker tag "$first" "lsp-${ID}:ci"
+            echo "ref=lsp-${ID}:ci" >> "$GITHUB_OUTPUT"
+          else
+            if [ "$MODE" = "ship" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
+              ref="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/lsp-${ID}:latest"
+            elif [ "$MODE" = "candidate" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
+              ref="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/lsp-${ID}:candidate"
+            else
+              ref="$(echo "$TAGS" | awk 'NF { print; exit }')"
+            fi
+            docker pull "$ref" || docker pull "$(echo "$TAGS" | awk 'NF { print; exit }')"
+            echo "ref=$ref" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Smoke LSP (ship)
+        if: inputs.mode == 'ship'
+        run: |
+          chmod +x containers/lsp-servers/smoke-lsp.sh
+          ./containers/lsp-servers/smoke-lsp.sh "${{ steps.img.outputs.ref }}" "${{ inputs.id }}"
+
+      - name: Smoke LSP (candidate / provisional)
+        if: inputs.mode == 'candidate'
+        run: |
+          chmod +x containers/lsp-servers/smoke-lsp.sh
+          ./containers/lsp-servers/smoke-lsp.sh --provisional "${{ steps.img.outputs.ref }}" "${{ inputs.id }}"
+
+      - name: Trivy image scan
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ${{ steps.img.outputs.ref }}
+          scanners: vuln,secret
+          severity: HIGH,CRITICAL
+          format: table
+          exit-code: "1"

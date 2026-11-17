@@ -1,0 +1,29 @@
+name: Promote lsp-json
+
+# Gate only: success means the PR may set tier:yellow ship:true for json.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'containers/lsp-servers/Containerfile'
+      - 'containers/lsp-servers/tiers.yaml'
+      - 'containers/lsp-servers/promote-check.sh'
+      - 'containers/lsp-servers/smoke-lsp.sh'
+      - '.github/workflows/_reusable-promote-lsp.yml'
+      - '.github/workflows/promote-lsp-json.yml'
+  pull_request:
+    paths:
+      - 'containers/lsp-servers/Containerfile'
+      - 'containers/lsp-servers/tiers.yaml'
+      - 'containers/lsp-servers/promote-check.sh'
+      - 'containers/lsp-servers/smoke-lsp.sh'
+      - '.github/workflows/_reusable-promote-lsp.yml'
+      - '.github/workflows/promote-lsp-json.yml'
+
+jobs:
+  promote:
+    uses: ./.github/workflows/_reusable-promote-lsp.yml
+    with:
+      id: json

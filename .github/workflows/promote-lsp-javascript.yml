@@ -1,0 +1,29 @@
+name: Promote lsp-javascript
+
+# Gate only: success means the PR may set tier:yellow ship:true for javascript.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'containers/lsp-servers/Containerfile'
+      - 'containers/lsp-servers/tiers.yaml'
+      - 'containers/lsp-servers/promote-check.sh'
+      - 'containers/lsp-servers/smoke-lsp.sh'
+      - '.github/workflows/_reusable-promote-lsp.yml'
+      - '.github/workflows/promote-lsp-javascript.yml'
+  pull_request:
+    paths:
+      - 'containers/lsp-servers/Containerfile'
+      - 'containers/lsp-servers/tiers.yaml'
+      - 'containers/lsp-servers/promote-check.sh'
+      - 'containers/lsp-servers/smoke-lsp.sh'
+      - '.github/workflows/_reusable-promote-lsp.yml'
+      - '.github/workflows/promote-lsp-javascript.yml'
+
+jobs:
+  promote:
+    uses: ./.github/workflows/_reusable-promote-lsp.yml
+    with:
+      id: javascript
