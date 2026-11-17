@@ -81,7 +81,7 @@ ENTRYPOINT ["typescript-language-server", "--stdio"]
 
 FROM npm-base AS typescript
 LABEL org.opencontainers.image.title="devenv lsp-typescript"
-LABEL org.devenv.lsp.tier="red"
+LABEL org.devenv.lsp.tier="yellow"
 LABEL org.devenv.lsp.id="typescript"
 # pin: npm:typescript-language-server@6.1.0+typescript@5.9.3
 RUN npm install -g --omit=dev typescript-language-server@6.1.0 typescript@5.9.3 \
