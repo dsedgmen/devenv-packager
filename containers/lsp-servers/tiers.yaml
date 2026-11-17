@@ -96,7 +96,7 @@ languages:
     aliases: [yaml]
     tree_sitter_pkg: libtree-sitter-yaml
     planned_source: npm:yaml-language-server
-    pin: npm:yaml-language-server@1.19.2
+    pin: npm:yaml-language-server@2.0.0
     command: [yaml-language-server, --stdio]
     binary: yaml-language-server
 
@@ -136,7 +136,7 @@ languages:
     aliases: [java]
     tree_sitter_pkg: libtree-sitter-java
     planned_source: eclipse-jdtls
-    pin: eclipse-jdtls@1.63.0#sha256:b1f2abe0b3cccb462cf64fb4a5587c7d09df60cf8be7748b152cbd89d018bdc4
+    pin: eclipse-jdtls@1.64.0#sha256:7a6351a39ab105396ca3a8e3e5b40101f95d9b56aa7c7b8225065fa9448b077b
     command: [jdtls]
     binary: jdtls
 

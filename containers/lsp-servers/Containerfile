@@ -103,8 +103,8 @@ FROM npm-base AS yaml
 LABEL org.opencontainers.image.title="devenv lsp-yaml"
 LABEL org.devenv.lsp.tier="red"
 LABEL org.devenv.lsp.id="yaml"
-# pin: npm:yaml-language-server@1.19.2
-RUN npm install -g --omit=dev yaml-language-server@1.19.2 \
+# pin: npm:yaml-language-server@2.0.0
+RUN npm install -g --omit=dev yaml-language-server@2.0.0 \
     && npm cache clean --force
 USER lspuser
 ENTRYPOINT ["yaml-language-server", "--stdio"]
@@ -153,13 +153,13 @@ FROM base AS java
 LABEL org.opencontainers.image.title="devenv lsp-java"
 LABEL org.devenv.lsp.tier="red"
 LABEL org.devenv.lsp.id="java"
-# pin: eclipse-jdtls@1.63.0
-ARG JDTLS_VERSION=1.63.0
-ARG JDTLS_BUILD=202610191322
-ARG JDTLS_SHA256=b1f2abe0b3cccb462cf64fb4a5587c7d09df60cf8be7748b152cbd89d018bdc4
+# pin: eclipse-jdtls@1.64.0 (snapshot until milestone publish; guava CVE fix)
+ARG JDTLS_VERSION=1.64.0
+ARG JDTLS_BUILD=202611121920
+ARG JDTLS_SHA256=7a6351a39ab105396ca3a8e3e5b40101f95d9b56aa7c7b8225065fa9448b077b
 RUN dnf install -y java-25-openjdk-headless python3 curl ca-certificates tar gzip \
     && curl -fsSL \
-      "https://download.eclipse.org/jdtls/milestones/${JDTLS_VERSION}/jdt-language-server-${JDTLS_VERSION}-${JDTLS_BUILD}.tar.gz" \
+      "https://download.eclipse.org/jdtls/snapshots/jdt-language-server-${JDTLS_VERSION}-${JDTLS_BUILD}.tar.gz" \
       -o /tmp/jdtls.tar.gz \
     && echo "${JDTLS_SHA256}  /tmp/jdtls.tar.gz" | sha256sum -c - \
     && mkdir -p /opt/jdtls \

@@ -45,6 +45,8 @@ Red languages have pins + Containerfile targets and CI builds `:candidate` image
 2. Promote gate: `./promote-check.sh <id>` or run `promote-lsp-<id>.yml` (Actions → workflow_dispatch, or push to `main` that touches LSP packaging).
 3. When promote-check passes on `main` / dispatch, the workflow opens a PR (`promote/<id>`) that sets `tier: yellow` / `ship: true` and flips the Containerfile tier label. Merge that PR to publish `:latest`.
 
+Repo setting required for step 3 automation: **Settings → Actions → General → Allow GitHub Actions to create and approve pull requests** (and workflow permissions **Read and write**).
+
 Local equivalent of step 3: `./apply-promote.sh <id>` then open the PR yourself.
 
 ## Build

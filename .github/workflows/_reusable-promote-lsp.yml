@@ -67,8 +67,11 @@ jobs:
 
       - name: Create promote pull request
         if: steps.skip.outputs.skip != 'true'
+        id: cpr
         uses: peter-evans/create-pull-request@v7
         with:
+          # Needs repo setting: Actions → General → Allow GitHub Actions to create and approve pull requests
+          # (API: actions/permissions/workflow can_approve_pull_request_reviews=true, default write).
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: promote/${{ inputs.id }}
           delete-branch: true
@@ -88,3 +91,18 @@ jobs:
             - [ ] Confirm `promote-check` / promote workflow was green for `${{ inputs.id }}`
             - [ ] Confirm `build-lsp-${{ inputs.id }}` will publish `:latest` after merge
           labels: promotion
+
+      - name: Fallback compare link if PR create blocked
+        if: always() && steps.skip.outputs.skip != 'true' && steps.cpr.outcome == 'failure'
+        env:
+          ID: ${{ inputs.id }}
+        run: |
+          {
+            echo "### Promote PR create failed for \`lsp-${ID}\`"
+            echo ""
+            echo "Branch \`promote/${ID}\` was pushed, but GitHub Actions is not allowed to create PRs."
+            echo "Enable: **Settings → Actions → General → Allow GitHub Actions to create and approve pull requests**"
+            echo ""
+            echo "Or open: https://github.com/${{ github.repository }}/compare/main...promote/${ID}?expand=1"
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1
